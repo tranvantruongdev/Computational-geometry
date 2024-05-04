@@ -730,8 +730,8 @@ MonoBehaviour:
   rectangleSelectionType: 0
   rectangleSelectionPhase: 0
   pointSelectionType: 0
-  targetZoom: {x: 1, y: 1}
-  targetMoveOffset: {x: 0, y: 0}
+  targetZoom: {x: 1.5, y: 1.5}
+  targetMoveOffset: {x: -1200, y: -500}
 --- !u!114 &2010626710
 MonoBehaviour:
   m_ObjectHideFlags: 0
