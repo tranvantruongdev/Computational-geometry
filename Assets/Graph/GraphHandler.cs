@@ -34,7 +34,7 @@ public class GraphHandler : MonoBehaviour
         UpdateGraphInternal(UpdateMethod.All);
     }
 
-    private void DrawSinGraph()
+    public void DrawSinGraph()
     {
         for (float i = -10; i < 10; i += 0.2f)
         {
@@ -43,6 +43,37 @@ public class GraphHandler : MonoBehaviour
 
         UpdateGraph();
     }
+
+    public void DrawCosGraph()
+    {
+        for (float i = -10; i < 10; i += 0.2f)
+        {
+            CreatePoint(new Vector2(i, Mathf.Cos(i)));
+        }
+
+        UpdateGraph();
+    }
+
+    public void DrawTanGraph()
+    {
+        for (float i = -10; i < 10; i += 0.2f)
+        {
+            CreatePoint(new Vector2(i, Mathf.Tan(i)));
+        }
+
+        UpdateGraph();
+    }
+
+    public void DrawCotGraph()
+    {
+        for (float i = -10; i < 10; i += 0.2f)
+        {
+            CreatePoint(new Vector2(i, 1 / Mathf.Tan(i)));
+        }
+
+        UpdateGraph();
+    }
+
     #endregion
 
     #region references
@@ -214,7 +245,6 @@ public class GraphHandler : MonoBehaviour
 
         GS = GetComponent<GraphSettings>();
         PrepareGraph();
-        DrawSinGraph();
     }
     private void Update()
     {
