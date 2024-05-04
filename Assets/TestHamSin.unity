@@ -673,10 +673,10 @@ MonoBehaviour:
   pointHoverRadius: 0
   PointHoverSpeed: 5
   pointHoverColor: {r: 1, g: 0.6, b: 0, a: 1}
-  pointLockedRadius: 17
+  pointLockedRadius: 0
   PointLockedSpeed: 5
   pointLockedColor: {r: 1, g: 0.8, b: 0, a: 1}
-  unfixedPointOutlineWidth: 10
+  unfixedPointOutlineWidth: 0
   unfixedPointOutlineColor: {r: 0, g: 0.8, b: 1, a: 1}
   unfixedPointOutlineHoverWidth: 15
   UnfixedPointOutlineHoverSpeed: 5
