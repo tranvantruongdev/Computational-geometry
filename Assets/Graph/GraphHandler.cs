@@ -478,10 +478,6 @@ public class GraphHandler : MonoBehaviour
             line.GetComponent<Image>().color = GS.LineColor;
             lineRects.Add(line.GetComponent<RectTransform>());
             lines.Add(line);
-            if (value.x < bottomLeft.x || value.x > topRight.x)
-            {
-                line.SetActive(false);
-            }
         }
         lockedHoveredPoints.Add(i);
         SortIndices();
