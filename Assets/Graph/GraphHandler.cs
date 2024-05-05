@@ -12,7 +12,155 @@ using UnityEngine.UI;
 
 public class GraphHandler : MonoBehaviour
 {
-    #region accessible methods
+    #region ===== Field =====
+
+    [SerializeField] private Canvas canvas;
+
+    private GraphSettings       GS;
+    private RectTransform       graph;
+    private RectTransform       graphContent;
+
+    private Vector2             contentScale = Vector2.zero;
+
+    private List<int>           sortedIndices;
+    private Vector2Int          xAxisRange = new(-1, -1);
+    private Vector2Int          prevXAxisRange = new(-1, -1);
+    private Vector2             activePointValue = Vector2.zero;
+    private bool                pointIsActive = false;
+
+    private List<GameObject>            points;
+    private List<Image>                 pointImages;
+    private List<RectTransform>         pointRects;
+    private List<GameObject>            pointOutlines;
+    private List<RectTransform>         pointOutlineRects;
+    private List<Image>                 pointOutlineImages;
+    private List<GameObject>            lines;
+    private List<RectTransform>         lineRects;
+    private List<Image>                 lineImages;
+    private List<RectTransform>         xGridRects;
+    private List<Image>                 xGridImages;
+    private List<TextMeshProUGUI>       xAxisTexts;
+    private List<RectTransform>         xAxisTextRects;
+    private List<RectTransform>         yGridRects;
+    private List<Image>                 yGridImages;
+    private List<TextMeshProUGUI>       yAxisTexts;
+    private List<RectTransform>         yAxisTextRects;
+
+    private RectTransform               zoomSelectionRectTransform;
+    private Image                       zoomSelectionImage;
+    private List<RectTransform>         zoomSelectionOutlines;
+    private List<Image>                 zoomSelectionOutlineImages;
+    private RectTransform               pointSelectionRectTransform;
+    private Image                       pointSelectionImage;
+    private List<RectTransform>         pointSelectionOutlines;
+    private List<Image>                 pointSelectionOutlineImages;
+
+    private RectTransform               maskObj;
+    private Image                       backgroundImage;
+    private RectTransform               backgroundRect;
+    private GameObject                  pointParent;
+    private GameObject                  lineParent;
+    private GameObject                  gridParent;
+    private GameObject                  outlineParent;
+    private List<RectTransform>         outlines;
+    private List<Image>                 outlineImages;
+
+    private List<int>       lockedHoveredPoints;
+    private List<int>       lockedPoints;
+    private List<int>       fixedHoveredPoints;
+    private Vector2         contentOffset = Vector2.zero;
+
+    private Vector2         bottomLeft, topRight, center;
+    private List<int>       initialLockedPoints;
+    private List<int>       recentlyLockedPoints;
+
+    private bool            mouseInsideBounds = false;
+    private Vector2         mousePos;
+    private Vector2         previousMousePos;
+    private Vector2         initialMousePos = Vector2.zero;
+    private bool            initialMouseInsideBounds = false;
+    private Vector2         zoomPoint = Vector2.zero;
+    private Vector2         absoluteZoomPoint = Vector2.zero;
+    private Vector2         zoom = new(1f, 1f);
+
+    private Vector2         moveOffset;
+    private Vector2         initialMoveOffset = Vector2.zero;
+
+    private float           timeToUpdateMouse = 0;
+    private float           timeToUpdateTouch = 0;
+    private float           timeToUpdateScroll = 0;
+    private bool            error;
+
+    #endregion
+
+    #region ===== Property =====
+
+    public bool updateGraph = false;
+    public List<Vector2> Values { get; private set; }
+    public Vector2Int XAxisRange => xAxisRange;
+    public int              activePointIndex = -1;
+    public Vector2 ActivePointValue => activePointValue;
+    public int              fixedPointIndex = -1;
+    public Vector2 BottomLeft => bottomLeft;
+    public Vector2 TopRight => topRight;
+    public Vector2 Center => center;
+
+    public enum MouseActionType
+    {
+        Move,
+        SelectAreaToZoom,
+        SelectPoints
+    }
+    public MouseActionType mouseActionType;
+
+    public enum RectangleType
+    {
+        Free,
+        PreserveAspectRatio,
+        OriginalAspectRatio
+    }
+    public RectangleType rectangleType;
+
+    public enum RectangleSelectionType
+    {
+        SelectAll,
+        SelectUnselect
+    }
+    public RectangleSelectionType rectangleSelectionType;
+
+    public enum RectangleSelectionPhase
+    {
+        Moving,
+        Release
+    }
+    public RectangleSelectionPhase rectangleSelectionPhase;
+
+    public enum PointSelectionType
+    {
+        Select,
+        FixZoomPoint
+    }
+    public PointSelectionType pointSelectionType;
+
+    public Vector2 targetZoom = new(1f, 1f);
+    public Vector2 targetMoveOffset;
+
+    [Flags]
+    public enum UpdateMethod
+    {
+        UpdatePositionAndScale = 1 << 0,
+        UpdateOutlines = 1 << 1,
+        UpdatePointVisuals = 1 << 2,
+        UpdateContent = 1 << 3,
+        MouseZoom = 1 << 4,
+        MouseAction = 1 << 5,
+        UpdateGridLines = 1 << 6,
+        All = 1 << 7
+    }
+
+    #endregion
+
+    #region ===== API =====
 
     public void CreatePoint(Vector2 newValue)
     {
@@ -74,130 +222,49 @@ public class GraphHandler : MonoBehaviour
         UpdateGraph();
     }
 
+    public void Clear()
+    {
+        foreach (GameObject point in points)
+        {
+            Destroy(point);
+        }
+        points.Clear();
+        Values.Clear();
+
+        foreach (GameObject line in lines)
+        {
+            Destroy(line);
+        }
+        lines.Clear();
+
+        lockedHoveredPoints.Clear();
+
+        foreach (GameObject pointOutline in pointOutlines)
+        {
+            Destroy(pointOutline);
+        }
+        pointOutlines.Clear();
+
+        Values.Clear();
+
+        sortedIndices.Clear();
+
+        pointRects.Clear();
+
+        fixedHoveredPoints.Clear();
+
+        pointOutlineRects.Clear();
+
+        lineRects.Clear();
+
+        pointOutlineImages.Clear();
+
+        UpdateGraph();
+    }
+
     #endregion
 
-    #region references
-
-    public bool updateGraph = false;
-    private GraphSettings GS;
-    [SerializeField] private Canvas canvas;
-    private RectTransform graph;
-    private RectTransform graphContent;
-
-    private Vector2 contentScale = Vector2.zero;
-
-    public List<Vector2> Values { get; private set; }
-    private List<int> sortedIndices;
-    private Vector2Int xAxisRange = new(-1, -1);
-    public Vector2Int XAxisRange => xAxisRange;
-    private Vector2Int prevXAxisRange = new(-1, -1);
-    public int activePointIndex = -1;
-    private Vector2 activePointValue = Vector2.zero;
-    public Vector2 ActivePointValue => activePointValue;
-    private bool pointIsActive = false;
-
-    private List<GameObject> points;
-    private List<Image> pointImages;
-    private List<RectTransform> pointRects;
-    private List<GameObject> pointOutlines;
-    private List<RectTransform> pointOutlineRects;
-    private List<Image> pointOutlineImages;
-    private List<GameObject> lines;
-    private List<RectTransform> lineRects;
-    private List<Image> lineImages;
-    private List<RectTransform> xGridRects;
-    private List<Image> xGridImages;
-    private List<TextMeshProUGUI> xAxisTexts;
-    private List<RectTransform> xAxisTextRects;
-    private List<RectTransform> yGridRects;
-    private List<Image> yGridImages;
-    private List<TextMeshProUGUI> yAxisTexts;
-    private List<RectTransform> yAxisTextRects;
-
-    private RectTransform zoomSelectionRectTransform;
-    private Image zoomSelectionImage;
-    private List<RectTransform> zoomSelectionOutlines;
-    private List<Image> zoomSelectionOutlineImages;
-    private RectTransform pointSelectionRectTransform;
-    private Image pointSelectionImage;
-    private List<RectTransform> pointSelectionOutlines;
-    private List<Image> pointSelectionOutlineImages;
-
-    private RectTransform maskObj;
-    private Image backgroundImage;
-    private RectTransform backgroundRect;
-    private GameObject pointParent;
-    private GameObject lineParent;
-    private GameObject gridParent;
-    private GameObject outlineParent;
-    private List<RectTransform> outlines;
-    private List<Image> outlineImages;
-
-    private List<int> lockedHoveredPoints;
-    private List<int> lockedPoints;
-    private List<int> fixedHoveredPoints;
-    public int fixedPointIndex = -1;
-    private Vector2 contentOffset = Vector2.zero;
-
-    private Vector2 bottomLeft, topRight, center;
-    public Vector2 BottomLeft => bottomLeft;
-    public Vector2 TopRight => topRight;
-    public Vector2 Center => center;
-    public enum MouseActionType
-    {
-        Move,
-        SelectAreaToZoom,
-        SelectPoints
-    }
-    public MouseActionType mouseActionType;
-    public enum RectangleType
-    {
-        Free,
-        PreserveAspectRatio,
-        OriginalAspectRatio
-    }
-    public RectangleType rectangleType;
-    public enum RectangleSelectionType
-    {
-        SelectAll,
-        SelectUnselect
-    }
-    public RectangleSelectionType rectangleSelectionType;
-    public enum RectangleSelectionPhase
-    {
-        Moving,
-        Release
-    }
-    public RectangleSelectionPhase rectangleSelectionPhase;
-    public enum PointSelectionType
-    {
-        Select,
-        FixZoomPoint
-    }
-    public PointSelectionType pointSelectionType;
-    private List<int> initialLockedPoints;
-    private List<int> recentlyLockedPoints;
-
-    private bool mouseInsideBounds = false;
-    private Vector2 mousePos;
-    private Vector2 previousMousePos;
-    private Vector2 initialMousePos = Vector2.zero;
-    private bool initialMouseInsideBounds = false;
-    private Vector2 zoomPoint = Vector2.zero;
-    private Vector2 absoluteZoomPoint = Vector2.zero;
-
-    public Vector2 targetZoom = new(1f, 1f);
-    private Vector2 zoom = new(1f, 1f);
-
-    private Vector2 moveOffset;
-    public Vector2 targetMoveOffset;
-    private Vector2 initialMoveOffset = Vector2.zero;
-
-    private float timeToUpdateMouse = 0;
-    private float timeToUpdateTouch = 0;
-    private float timeToUpdateScroll = 0;
-    private bool error;
-
+    #region ===== Unity Event =====
     private void Awake()
     {
         Values = new List<Vector2>();
@@ -232,10 +299,6 @@ public class GraphHandler : MonoBehaviour
         fixedHoveredPoints = new List<int>();
     }
 
-    #endregion
-
-    #region private methods
-
     private void Start()
     {
         if (CheckForErrors())
@@ -246,6 +309,7 @@ public class GraphHandler : MonoBehaviour
         GS = GetComponent<GraphSettings>();
         PrepareGraph();
     }
+
     private void Update()
     {
         mouseActionType = Input.GetKey(KeyCode.LeftShift)
@@ -295,6 +359,11 @@ public class GraphHandler : MonoBehaviour
         zoom = Vector2.Lerp(zoom, targetZoom, GS.SmoothZoomSpeed * Time.deltaTime);
         moveOffset = Vector2.Lerp(moveOffset, targetMoveOffset, GS.SmoothMoveSpeed * Time.deltaTime);
     }
+
+    #endregion
+
+    #region ===== Private Function =====
+
     private void PrepareGraph()
     {
         if (canvas == null)
@@ -340,7 +409,7 @@ public class GraphHandler : MonoBehaviour
 
         fixedPointIndex = -1;
         //SetCornerValues(Vector2.zero, new Vector2(3f, 3f * GS.GraphSize.y / GS.GraphSize.x));
-        CreateselectionTypes();
+        CreateSelectionTypes();
         UpdateGraphInternal(UpdateMethod.All);
     }
 
@@ -369,49 +438,8 @@ public class GraphHandler : MonoBehaviour
         }
     }
 
-    public void Clear()
-    {
-        foreach (GameObject point in points)
-        {
-            Destroy(point);
-        }
-        points.Clear();
-        Values.Clear();
-
-        foreach (GameObject line in lines)
-        {
-            Destroy(line);
-        }
-        lines.Clear();
-
-        lockedHoveredPoints.Clear();
-
-        foreach (GameObject pointOutline in pointOutlines)
-        {
-            Destroy(pointOutline);
-        }
-        pointOutlines.Clear();
-
-        Values.Clear();
-
-        sortedIndices.Clear();
-
-        pointRects.Clear();
-
-        fixedHoveredPoints.Clear();
-
-        pointOutlineRects.Clear();
-
-        lineRects.Clear();
-
-        pointOutlineImages.Clear();
-
-        UpdateGraph();
-    }
-
     private void CreatePointInternal(Vector2 value)
     {
-
         int i = points.Count;
         GameObject outline = CreatePointOutline(i);
         GameObject point = new("Point" + i);
@@ -477,7 +505,6 @@ public class GraphHandler : MonoBehaviour
             .Select(item => item.index)
             .ToList();
     }
-
 
     private GameObject CreatePointOutline(int i)
     {
@@ -558,7 +585,7 @@ public class GraphHandler : MonoBehaviour
         }
     }
 
-    private void CreateselectionTypes()
+    private void CreateSelectionTypes()
     {
         GameObject selectionParent = new("SelectionParent");
         selectionParent.transform.SetParent(graphContent);
@@ -627,6 +654,7 @@ public class GraphHandler : MonoBehaviour
         timeToUpdateTouch -= Time.deltaTime;
         timeToUpdateScroll -= Time.deltaTime;
     }
+
     public void UpdateGraphInternal(UpdateMethod methodsToUpdate)
     {
         if (methodsToUpdate.HasFlag(UpdateMethod.UpdatePositionAndScale) || methodsToUpdate.HasFlag(UpdateMethod.All))
@@ -671,6 +699,7 @@ public class GraphHandler : MonoBehaviour
             UpdateGridLines();
         }
     }
+
     private void UpdatePositionAndScale()
     {
         contentScale = GS.GraphScale * zoom;
@@ -681,6 +710,7 @@ public class GraphHandler : MonoBehaviour
         backgroundRect.sizeDelta = GS.GraphSize;
         backgroundImage.color = GS.BackgroundColor;
     }
+
     private void UpdateOutlines()
     {
         for (int i = 0; i < outlines.Count; i++)
@@ -698,6 +728,7 @@ public class GraphHandler : MonoBehaviour
             outlineImages[i].color = GS.OutlineColor;
         }
     }
+
     private void CalculateCornerValues()
     {
         topRight = new Vector2(Mathf.Clamp(topRight.x, bottomLeft.x, Mathf.Infinity), Mathf.Clamp(topRight.y, bottomLeft.y, Mathf.Infinity));
@@ -705,6 +736,7 @@ public class GraphHandler : MonoBehaviour
         topRight = bottomLeft + (GS.GraphSize / contentScale);
         center = ((topRight - bottomLeft) / 2f) + bottomLeft;
     }
+
     private void UpdateContent()
     {
         if (xAxisRange.x == -1 || xAxisRange.y == -1)
@@ -746,6 +778,7 @@ public class GraphHandler : MonoBehaviour
             }
         }
     }
+
     private void HandleActiveObjects()
     {
         if (prevXAxisRange.x < xAxisRange.x)
@@ -815,10 +848,12 @@ public class GraphHandler : MonoBehaviour
         prevXAxisRange = xAxisRange;
         xAxisRange = new Vector2Int(MinMaxBinarySearch(true), MinMaxBinarySearch(false));
     }
+
     private Vector2 CalculatePosition(int i)
     {
         return Values[i] * contentScale;
     }
+
     private void MouseTrigger(int pointIndex, bool enter)
     {
         fixedHoveredPoints.Add(pointIndex);
@@ -849,6 +884,7 @@ public class GraphHandler : MonoBehaviour
             pointIsActive = enter;
         }
     }
+
     private void PointClicked(int pointIndex)
     {
         if (pointSelectionType == PointSelectionType.FixZoomPoint)
@@ -876,6 +912,7 @@ public class GraphHandler : MonoBehaviour
             }
         }
     }
+
     private void UpdatePointVisuals()
     {
         if (xAxisRange.x == -1 || xAxisRange.y == -1)
@@ -894,6 +931,7 @@ public class GraphHandler : MonoBehaviour
             fixedHoveredPoints.Add(sortedIndices[i]);
         }
     }
+
     private void UpdatePoints()
     {
         for (int i = 0; i < lockedHoveredPoints.Count; i++)
@@ -939,6 +977,7 @@ public class GraphHandler : MonoBehaviour
         }
         UpdatePointOutlines();
     }
+
     private void UpdatePointOutlines()
     {
         for (int i = 0; i < fixedHoveredPoints.Count; i++)
@@ -1085,6 +1124,7 @@ public class GraphHandler : MonoBehaviour
             }
         }
     }
+
     private Vector2 CalculateGridSpacing()
     {
         int exponentX = Mathf.FloorToInt(Mathf.Log(zoom.x, 2));
@@ -1093,6 +1133,7 @@ public class GraphHandler : MonoBehaviour
         float closestY = Mathf.Pow(2, exponentY);
         return new Vector2(closestX, closestY) * GS.GridSpacing;
     }
+
     private void SetCornerValuesInternal(Vector2 newBottomLeft, Vector2 newTopRight)
     {
         Vector2 newCenter = ((newTopRight - newBottomLeft) / 2f) + newBottomLeft;
@@ -1101,12 +1142,14 @@ public class GraphHandler : MonoBehaviour
         ChangeZoomPoint(newCenter);
         targetZoom = GS.GraphSize / GS.GraphScale / (newTopRight - newBottomLeft);
     }
+
     private void CalculateMousePosition()
     {
         mousePos = (new Vector2(Input.mousePosition.x, Input.mousePosition.y) - new Vector2(graphContent.transform.position.x, graphContent.transform.position.y)) / contentScale;
         mouseInsideBounds = mousePos.x > bottomLeft.x && mousePos.y > bottomLeft.y && mousePos.x < topRight.x && mousePos.y < topRight.y;
         mousePos = new Vector2(Mathf.Clamp(mousePos.x, bottomLeft.x, topRight.x), Mathf.Clamp(mousePos.y, bottomLeft.y, topRight.y));
     }
+
     private void MouseZoom()
     {
         if (!mouseInsideBounds)
@@ -1126,6 +1169,7 @@ public class GraphHandler : MonoBehaviour
 
         targetZoom = zoom + (Input.mouseScrollDelta.y * zoom * GS.ZoomSpeed / 100f);
     }
+
     private void ChangeZoomPoint(Vector2 newZoomPoint)
     {
         absoluteZoomPoint = ((newZoomPoint - zoomPoint) * contentScale) + absoluteZoomPoint;
@@ -1270,6 +1314,7 @@ public class GraphHandler : MonoBehaviour
             }
         }
     }
+
     private void SelectAreaToZoom(bool release)
     {
         Vector2 relativeInitialMousePos = (new Vector2(initialMousePos.x, initialMousePos.y) - new Vector2(graphContent.transform.position.x, graphContent.transform.position.y)) / contentScale;
@@ -1311,6 +1356,7 @@ public class GraphHandler : MonoBehaviour
         }
 
     }
+
     private void SelectPoints(bool release)
     {
         Vector2 relativeInitialMousePos = (new Vector2(initialMousePos.x, initialMousePos.y) - new Vector2(graphContent.transform.position.x, graphContent.transform.position.y)) / contentScale;
@@ -1356,6 +1402,7 @@ public class GraphHandler : MonoBehaviour
             }
         }
     }
+
     private void PointSelect(bool moving, Vector2 newBottomLeft, Vector2 newTopRight)
     {
         for (int index = xAxisRange.x; index <= xAxisRange.y; index++)
@@ -1441,6 +1488,7 @@ public class GraphHandler : MonoBehaviour
             lockedPoints = lockedPoints.Distinct().ToList();
         }
     }
+
     private int MinMaxBinarySearch(bool findLeft) //important for large numbers of points
     {
         //this function finds the points that are closest to the sides of the graph window
@@ -1484,6 +1532,7 @@ public class GraphHandler : MonoBehaviour
         }
         return -1;
     }
+
     private void UpdateSizeDelta(RectTransform rect, Vector2 size)
     {
         if (Mathf.Abs(rect.sizeDelta.x - size.x) > 0.1f || Mathf.Abs(rect.sizeDelta.y - size.y) > 0.1f)
@@ -1491,6 +1540,7 @@ public class GraphHandler : MonoBehaviour
             rect.sizeDelta = size;
         }
     }
+
     private void UpdateAnchoredPosition(RectTransform rect, Vector2 position)
     {
         if (Mathf.Abs(rect.sizeDelta.x - position.x) > 0.1f || Mathf.Abs(rect.sizeDelta.y - position.y) > 0.1f)
@@ -1498,18 +1548,7 @@ public class GraphHandler : MonoBehaviour
             rect.anchoredPosition = position;
         }
     }
-    [Flags]
-    public enum UpdateMethod
-    {
-        UpdatePositionAndScale = 1 << 0,
-        UpdateOutlines = 1 << 1,
-        UpdatePointVisuals = 1 << 2,
-        UpdateContent = 1 << 3,
-        MouseZoom = 1 << 4,
-        MouseAction = 1 << 5,
-        UpdateGridLines = 1 << 6,
-        All = 1 << 7
-    }
+
     private bool CheckForErrors()
     {
         if (GetComponent<GraphSettings>() == null)
@@ -1530,6 +1569,7 @@ public class GraphHandler : MonoBehaviour
         }
         return error;
     }
+
     #endregion
 }
 
