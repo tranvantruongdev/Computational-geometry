@@ -369,6 +369,46 @@ public class GraphHandler : MonoBehaviour
         }
     }
 
+    public void Clear()
+    {
+        foreach (GameObject point in points)
+        {
+            Destroy(point);
+        }
+        points.Clear();
+        Values.Clear();
+
+        foreach (GameObject line in lines)
+        {
+            Destroy(line);
+        }
+        lines.Clear();
+
+        lockedHoveredPoints.Clear();
+
+        foreach (GameObject pointOutline in pointOutlines)
+        {
+            Destroy(pointOutline);
+        }
+        pointOutlines.Clear();
+
+        Values.Clear();
+
+        sortedIndices.Clear();
+
+        pointRects.Clear();
+
+        fixedHoveredPoints.Clear();
+
+        pointOutlineRects.Clear();
+
+        lineRects.Clear();
+
+        pointOutlineImages.Clear();
+
+        UpdateGraph();
+    }
+
     private void CreatePointInternal(Vector2 value)
     {
 
