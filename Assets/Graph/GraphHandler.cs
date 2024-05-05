@@ -451,11 +451,12 @@ public class GraphHandler : MonoBehaviour
 
         Image image = point.AddComponent<Image>();
         image.color = GS.PointColor;
+        image.sprite = GS.PointSprite;
         pointImages.Add(image);
+
         RectTransform pointRectTransform = point.GetComponent<RectTransform>();
         pointRectTransform.sizeDelta = Vector2.one * GS.PointRadius;
         pointRects.Add(pointRectTransform);
-        image.sprite = GS.PointSprite;
 
         EventTrigger trigger = point.AddComponent<EventTrigger>();
         var eventTypes = new[]
@@ -464,12 +465,14 @@ public class GraphHandler : MonoBehaviour
             new { Type = EventTriggerType.PointerExit, Callback = (Action) (() => MouseTrigger(i, false)) },
             new { Type = EventTriggerType.PointerClick, Callback = (Action) (() => PointClicked(i)) }
         };
+
         foreach (var eventType in eventTypes)
         {
             EventTrigger.Entry entry = new() { eventID = eventType.Type };
             entry.callback.AddListener((data) => { eventType.Callback(); });
             trigger.triggers.Add(entry);
         }
+
         if (points.Count > 1)
         {
             GameObject line = new("Line");
@@ -479,8 +482,10 @@ public class GraphHandler : MonoBehaviour
             lineRects.Add(line.GetComponent<RectTransform>());
             lines.Add(line);
         }
+
         lockedHoveredPoints.Add(i);
         SortIndices();
+
         if (value.x < bottomLeft.x || value.x > topRight.x)
         {
             outline.SetActive(false);
