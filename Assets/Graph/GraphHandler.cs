@@ -15,6 +15,9 @@ public class GraphHandler : MonoBehaviour
     #region ===== Field =====
 
     [SerializeField] private Canvas canvas;
+    [SerializeField] private TMP_InputField ifA;
+    [SerializeField] private TMP_InputField ifB;
+    [SerializeField] private TMP_InputField ifC;
 
     private GraphSettings       GS;
     private RectTransform       graph;
@@ -98,9 +101,9 @@ public class GraphHandler : MonoBehaviour
     public bool updateGraph = false;
     public List<Vector2> Values { get; private set; }
     public Vector2Int XAxisRange => xAxisRange;
-    public int              activePointIndex = -1;
+    public int activePointIndex = -1;
     public Vector2 ActivePointValue => activePointValue;
-    public int              fixedPointIndex = -1;
+    public int fixedPointIndex = -1;
     public Vector2 BottomLeft => bottomLeft;
     public Vector2 TopRight => topRight;
     public Vector2 Center => center;
@@ -222,6 +225,26 @@ public class GraphHandler : MonoBehaviour
         UpdateGraph();
     }
 
+    public void DrawQuadraticFunction()
+    {
+        float y;
+        for (float x = -10f; x <= 10f; x += 0.2f)
+        {
+            int AValue = int.Parse(ifA.text.Trim());
+            int BValue = int.Parse(ifB.text.Trim());
+            int CValue = int.Parse(ifC.text.Trim());
+
+            y = BValue == 0
+                ? (AValue * x * x) + CValue
+                : (AValue * x * x) + (BValue * x) + CValue;
+
+            Vector2 point = new(x, y);
+            CreatePoint(point);
+        }
+
+        UpdateGraph();
+    }
+
     public void Clear()
     {
         foreach (GameObject point in points)
@@ -265,6 +288,7 @@ public class GraphHandler : MonoBehaviour
     #endregion
 
     #region ===== Unity Event =====
+
     private void Awake()
     {
         Values = new List<Vector2>();
