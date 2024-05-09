@@ -1200,7 +1200,18 @@ public class GraphHandler : MonoBehaviour
             ChangeZoomPoint(mousePos);
         }
 
-        targetZoom = zoom + (Input.mouseScrollDelta.y * zoom * GS.ZoomSpeed / 100f);
+        targetZoom = zoom + (GS.ZoomSpeed * Input.mouseScrollDelta.y * zoom / 100f);
+
+        if (targetZoom.x > 1.971156f)
+        {
+            targetZoom.x = targetZoom.y = 1.971156f;
+            return;
+        }
+
+        if (targetZoom.x < 1.012735f)
+        {
+            targetZoom.x = targetZoom.y = 1.012735f;
+        }
     }
 
     private void ChangeZoomPoint(Vector2 newZoomPoint)
