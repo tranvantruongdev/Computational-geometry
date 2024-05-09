@@ -187,22 +187,26 @@ public class GraphHandler : MonoBehaviour
 
     public void DrawSinGraph()
     {
-        for (float i = -10; i < 10; i += 0.2f)
+        for (float i = -5; i < 5; i += 0.2f)
         {
             CreatePoint(new Vector2(i, Mathf.Sin(i)));
         }
 
         UpdateGraph();
+        targetZoom = new(1.030771f, 1.030771f);
+        targetMoveOffset = new(-1347.53f, -547.9221f);
     }
 
     public void DrawCosGraph()
     {
-        for (float i = -10; i < 10; i += 0.2f)
+        for (float i = -5; i < 5; i += 0.2f)
         {
             CreatePoint(new Vector2(i, Mathf.Cos(i)));
         }
 
         UpdateGraph();
+        targetZoom = new(1.030771f, 1.030771f);
+        targetMoveOffset = new(-1347.53f, -547.9221f);
     }
 
     public void DrawTanGraph()
@@ -228,7 +232,7 @@ public class GraphHandler : MonoBehaviour
     public void DrawQuadraticFunction()
     {
         float y;
-        for (float x = -10f; x <= 10f; x += 0.2f)
+        for (float x = -3f; x <= 3f; x += 0.2f)
         {
             int AValue = int.Parse(ifA.text.Trim());
             int BValue = int.Parse(ifB.text.Trim());
