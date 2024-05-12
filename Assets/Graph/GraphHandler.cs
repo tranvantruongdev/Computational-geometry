@@ -111,39 +111,8 @@ public class GraphHandler : MonoBehaviour
     public enum MouseActionType
     {
         Move,
-        //SelectAreaToZoom,
-        //SelectPoints
     }
     public MouseActionType mouseActionType;
-
-    //public enum RectangleType
-    //{
-    //    Free,
-    //    PreserveAspectRatio,
-    //    OriginalAspectRatio
-    //}
-    //public RectangleType rectangleType;
-
-    //public enum RectangleSelectionType
-    //{
-    //    SelectAll,
-    //    SelectUnselect
-    //}
-    //public RectangleSelectionType rectangleSelectionType;
-
-    //public enum RectangleSelectionPhase
-    //{
-    //    Moving,
-    //    Release
-    //}
-    //public RectangleSelectionPhase rectangleSelectionPhase;
-
-    //public enum PointSelectionType
-    //{
-    //    Select,
-    //    FixZoomPoint
-    //}
-    //public PointSelectionType pointSelectionType;
 
     public Vector2 targetZoom = new(1f, 1f);
     public Vector2 targetMoveOffset;
@@ -341,11 +310,7 @@ public class GraphHandler : MonoBehaviour
 
     private void Update()
     {
-        mouseActionType =
-            //Input.GetKey(KeyCode.LeftShift)
-            //? MouseActionType.SelectAreaToZoom
-            //: Input.GetKey(KeyCode.LeftControl) ? MouseActionType.SelectPoints : 
-            MouseActionType.Move;
+        mouseActionType = MouseActionType.Move;
 
         if (error)
         {
@@ -353,25 +318,6 @@ public class GraphHandler : MonoBehaviour
         }
 
         CheckIfUpdateGraph();
-        /*
-        for(int i = 0; i <= xAxisRange.y + 1; i += 2)
-        {
-            if(xAxisRange.x != -1 && xAxisRange.y != -1)
-            {
-                int index = sortedIndices[i];
-                values[index] = new Vector2(values[index].x, Mathf.Sin(Time.time / 2f + values[index].x));
-                lineImages[index].color = new Color(1f, Mathf.Sin(Time.time * 2f + values[index].x) / 2f + 0.35f, 0, 1f);
-            }
-        }
-        for(int i = 1; i <= xAxisRange.y; i += 2)
-        {
-            if(xAxisRange.x != -1 && xAxisRange.y != -1)
-            {
-                int index = sortedIndices[i];
-                values[index] = new Vector2(values[index].x, -Mathf.Sin(Time.time / 2f + values[index].x));
-                lineImages[index].color = new Color(1f, Mathf.Sin(Time.time * 2f + values[index].x) / 2f + 0.35f, 0, 1f);
-            }
-        }*/
         if (updateGraph)
         {
             UpdateGraphInternal(UpdateMethod.All);
@@ -439,8 +385,6 @@ public class GraphHandler : MonoBehaviour
         outlineParent.transform.SetParent(graph);
 
         fixedPointIndex = -1;
-        //SetCornerValues(Vector2.zero, new Vector2(3f, 3f * GS.GraphSize.y / GS.GraphSize.x));
-        CreateSelectionTypes();
         UpdateGraphInternal(UpdateMethod.All);
     }
 
@@ -709,11 +653,6 @@ public class GraphHandler : MonoBehaviour
             HandleActiveObjects();
         }
 
-        if (methodsToUpdate.HasFlag(UpdateMethod.UpdatePointVisuals) || methodsToUpdate.HasFlag(UpdateMethod.All))
-        {
-            UpdatePointVisuals();
-        }
-
         if (methodsToUpdate.HasFlag(UpdateMethod.UpdateContent) || methodsToUpdate.HasFlag(UpdateMethod.All))
         {
             UpdateContent();
@@ -767,7 +706,6 @@ public class GraphHandler : MonoBehaviour
 
     private void CalculateCornerValues()
     {
-        topRight = new Vector2(Mathf.Clamp(topRight.x, bottomLeft.x, Mathf.Infinity), Mathf.Clamp(topRight.y, bottomLeft.y, Mathf.Infinity));
         bottomLeft = -contentOffset / contentScale;
         topRight = bottomLeft + (GS.GraphSize / contentScale);
         center = ((topRight - bottomLeft) / 2f) + bottomLeft;
@@ -900,21 +838,9 @@ public class GraphHandler : MonoBehaviour
             activePointIndex = pointIndex;
             activePointValue = Values[pointIndex];
             pointIsActive = enter;
-
-            //if (pointSelectionType == PointSelectionType.Select)
-            //{
-            //    lockedHoveredPoints.Add(pointIndex);
-            //    lockedHoveredPoints = lockedHoveredPoints.Distinct().ToList();
-            //}
         }
         else
         {
-            // Do not process PointerExit event for locked points
-            //if ((lockedPoints.Contains(activePointIndex) && pointSelectionType == PointSelectionType.Select) || (fixedPointIndex == activePointIndex && pointSelectionType == PointSelectionType.FixZoomPoint))
-            //{
-            //    return;
-            //}
-
             activePointIndex = pointIndex;
             activePointValue = Values[pointIndex];
             pointIsActive = enter;
@@ -923,29 +849,13 @@ public class GraphHandler : MonoBehaviour
 
     private void PointClicked(int pointIndex)
     {
-        //if (pointSelectionType == PointSelectionType.FixZoomPoint)
-        //{
-        //    if (fixedPointIndex != -1)
-        //    {
-        //        ChangeZoomPoint(Values[pointIndex]);
-        //        fixedHoveredPoints.Add(fixedPointIndex);
-        //    }
-
-        //    fixedHoveredPoints = fixedHoveredPoints.Distinct().ToList();
-
-        //    fixedPointIndex = (fixedPointIndex == pointIndex) ? -1 : pointIndex;
-        //    ChangeZoomPoint((fixedPointIndex == -1) ? center : Values[pointIndex]);
-        //}
-        //else
+        if (lockedPoints.Contains(pointIndex))
         {
-            if (lockedPoints.Contains(pointIndex))
-            {
-                lockedPoints.Remove(pointIndex);
-            }
-            else
-            {
-                lockedPoints.Add(pointIndex);
-            }
+            lockedPoints.Remove(pointIndex);
+        }
+        else
+        {
+            lockedPoints.Add(pointIndex);
         }
     }
 
@@ -984,12 +894,6 @@ public class GraphHandler : MonoBehaviour
                 targetColor = GS.PointLockedColor;
                 targetSpeed = GS.PointLockedSpeed;
             }
-            //else if (isActive && pointSelectionType == PointSelectionType.Select)
-            //{
-            //    targetSize = Vector2.one * GS.PointHoverRadius;
-            //    targetColor = GS.PointHoverColor;
-            //    targetSpeed = GS.PointHoverSpeed;
-            //}
             else
             {
                 targetSize = Vector2.one * GS.PointRadius;
@@ -1030,12 +934,6 @@ public class GraphHandler : MonoBehaviour
                 targetColor = GS.FixedPointOutlineColor;
                 targetSpeed = GS.FixedPointOutlineSpeed;
             }
-            //else if (isActive && pointSelectionType == PointSelectionType.FixZoomPoint)
-            //{
-            //    targetSize = new Vector2(GS.UnfixedPointOutlineHoverWidth, GS.UnfixedPointOutlineHoverWidth);
-            //    targetColor = GS.UnfixedPointOutlineHoverColor;
-            //    targetSpeed = GS.UnfixedPointOutlineHoverSpeed;
-            //}
             else
             {
                 targetSize = new Vector2(GS.UnfixedPointOutlineWidth, GS.UnfixedPointOutlineWidth);
@@ -1046,11 +944,7 @@ public class GraphHandler : MonoBehaviour
             targetSize += pointRects[numToUpdate].sizeDelta;
             RectTransform outlineRectTransform = pointOutlineRects[numToUpdate];
 
-            outlineRectTransform.sizeDelta =
-                //pointSelectionType == PointSelectionType.FixZoomPoint
-                //? Vector2.Lerp(outlineRectTransform.sizeDelta, targetSize, Time.deltaTime * targetSpeed)
-                //: 
-                targetSize;
+            outlineRectTransform.sizeDelta = targetSize;
 
             Image outlineImage = pointOutlineImages[numToUpdate];
             targetColor = Color.Lerp(outlineImage.color, targetColor, Time.deltaTime * targetSpeed);
@@ -1240,14 +1134,6 @@ public class GraphHandler : MonoBehaviour
             {
                 initialMoveOffset = moveOffset;
             }
-            //else if (mouseActionType == MouseActionType.SelectPoints)
-            //{
-            //    initialLockedPoints.Clear();
-            //    for (int i = 0; i < lockedPoints.Count; i++)
-            //    {
-            //        initialLockedPoints.Add(lockedPoints[i]);
-            //    }
-            //}
             return;
         }
         if (Input.GetMouseButton(0) && initialMouseInsideBounds)
@@ -1265,38 +1151,11 @@ public class GraphHandler : MonoBehaviour
                 {
                     targetMoveOffset = initialMousePos - currentMousePos + initialMoveOffset;
                 }
-                //else if (mouseActionType == MouseActionType.SelectAreaToZoom)
-                //{
-                //    if (!zoomSelectionRectTransform.gameObject.activeSelf)
-                //    {
-                //        zoomSelectionRectTransform.gameObject.SetActive(true);
-                //    }
-
-                //    SelectAreaToZoom(false);
-                //}
-                //else if (mouseActionType == MouseActionType.SelectPoints)
-                //{
-                //    if (!pointSelectionRectTransform.gameObject.activeSelf)
-                //    {
-                //        pointSelectionRectTransform.gameObject.SetActive(true);
-                //    }
-
-                //    SelectPoints(false);
-                //}
             }
             previousMousePos = mousePos;
         }
         else if (Input.GetMouseButtonUp(0) && initialMouseInsideBounds)
         {
-            //if (mouseActionType == MouseActionType.SelectAreaToZoom)
-            //{
-            //    SelectAreaToZoom(true);
-            //}
-            //else if (mouseActionType == MouseActionType.SelectPoints)
-            //{
-            //    SelectPoints(true);
-            //}
-
             recentlyLockedPoints.Clear();
         }
 
@@ -1312,15 +1171,6 @@ public class GraphHandler : MonoBehaviour
                 {
                     initialMoveOffset = moveOffset;
                 }
-                //else if (mouseActionType == MouseActionType.SelectPoints)
-                //{
-                //    initialLockedPoints.Clear();
-                //    for (int i = 0; i < lockedPoints.Count; i++)
-                //    {
-                //        initialLockedPoints.Add(lockedPoints[i]);
-                //    }
-                //}
-
             }
             else if (touch.phase == TouchPhase.Moved && initialMouseInsideBounds)
             {
@@ -1329,219 +1179,11 @@ public class GraphHandler : MonoBehaviour
                     Vector2 currentTouchPos = touch.position;
                     targetMoveOffset = initialMousePos - currentTouchPos + initialMoveOffset;
                 }
-                //else if (mouseActionType == MouseActionType.SelectAreaToZoom)
-                //{
-                //    if (!zoomSelectionRectTransform.gameObject.activeSelf)
-                //    {
-                //        zoomSelectionRectTransform.gameObject.SetActive(true);
-                //    }
-
-                //    SelectAreaToZoom(false);
-                //}
-                //else if (mouseActionType == MouseActionType.SelectPoints)
-                //{
-                //    if (!pointSelectionRectTransform.gameObject.activeSelf)
-                //    {
-                //        pointSelectionRectTransform.gameObject.SetActive(true);
-                //    }
-
-                //    SelectPoints(false);
-                //}
             }
             else if (touch.phase == TouchPhase.Ended && initialMouseInsideBounds)
             {
-                //if (mouseActionType == MouseActionType.SelectAreaToZoom)
-                //{
-                //    SelectAreaToZoom(true);
-                //}
-                //else if (mouseActionType == MouseActionType.SelectPoints)
-                //{
-                //    SelectPoints(true);
-                //}
-
                 recentlyLockedPoints.Clear();
             }
-        }
-    }
-
-    private void SelectAreaToZoom(bool release)
-    {
-        Vector2 relativeInitialMousePos = (new Vector2(initialMousePos.x, initialMousePos.y) - new Vector2(graphContent.transform.position.x, graphContent.transform.position.y)) / contentScale;
-
-        Vector2 preserveAspectRatioCorner = new(mousePos.x, relativeInitialMousePos.y + ((mousePos.x - relativeInitialMousePos.x) / GS.GraphSize.x * GS.GraphSize.y * contentScale.x / contentScale.y));
-        Vector2 originalAspectRatioCorner = new(mousePos.x, relativeInitialMousePos.y + (mousePos.x - relativeInitialMousePos.x));
-
-        Vector2 newCorner = 
-            //rectangleType == RectangleType.Free 
-            //? mousePos 
-            //: (rectangleType == RectangleType.PreserveAspectRatio 
-            //    ? preserveAspectRatioCorner : 
-                originalAspectRatioCorner
-                //)
-                ;
-        if (!release)
-        {
-            zoomSelectionRectTransform.anchoredPosition = (relativeInitialMousePos + ((newCorner - relativeInitialMousePos) / 2f)) * contentScale;
-            Vector2 areaSize = new Vector2(Mathf.Abs(newCorner.x - relativeInitialMousePos.x), Mathf.Abs(newCorner.y - relativeInitialMousePos.y)) * contentScale;
-            zoomSelectionRectTransform.sizeDelta = areaSize;
-            zoomSelectionImage.color = GS.ZoomSelectionColor;
-            for (int i = 0; i < zoomSelectionOutlines.Count; i++)
-            {
-                if (i % 2 == 0) // Left and Right outlines
-                {
-                    zoomSelectionOutlines[i].sizeDelta = new Vector2(GS.ZoomSelectionOutlineWidth, areaSize.y + (GS.ZoomSelectionOutlineWidth * 2));
-                    zoomSelectionOutlines[i].anchoredPosition = new Vector2((i == 0 ? -1 : 1) * (areaSize.x + GS.ZoomSelectionOutlineWidth) / 2, 0);
-                }
-                else // Top and Bottom outlines
-                {
-                    zoomSelectionOutlines[i].sizeDelta = new Vector2(areaSize.x + (GS.ZoomSelectionOutlineWidth * 2), GS.ZoomSelectionOutlineWidth);
-                    zoomSelectionOutlines[i].anchoredPosition = new Vector2(0, (i == 1 ? -1 : 1) * (areaSize.y + GS.ZoomSelectionOutlineWidth) / 2);
-                }
-                zoomSelectionOutlineImages[i].color = GS.ZoomSelectionOutlineColor;
-            }
-        }
-        else
-        {
-            zoomSelectionRectTransform.gameObject.SetActive(false);
-            Vector2 newBottomLeft = new(Mathf.Min(relativeInitialMousePos.x, newCorner.x), Mathf.Min(relativeInitialMousePos.y, newCorner.y));
-            Vector2 newTopRight = new(Mathf.Max(relativeInitialMousePos.x, newCorner.x), Mathf.Max(relativeInitialMousePos.y, newCorner.y));
-            if ((newTopRight - newBottomLeft).magnitude > (topRight - bottomLeft).magnitude / 16f)
-            {
-                SetCornerValues(newBottomLeft, newTopRight);
-            }
-        }
-
-    }
-
-    private void SelectPoints(bool release)
-    {
-        Vector2 relativeInitialMousePos = (new Vector2(initialMousePos.x, initialMousePos.y) - new Vector2(graphContent.transform.position.x, graphContent.transform.position.y)) / contentScale;
-
-        if (!release)
-        {
-            Vector2 newCorner = mousePos;
-
-            pointSelectionRectTransform.anchoredPosition = (relativeInitialMousePos + ((newCorner - relativeInitialMousePos) / 2f)) * contentScale;
-            Vector2 areaSize = new Vector2(Mathf.Abs(newCorner.x - relativeInitialMousePos.x), Mathf.Abs(newCorner.y - relativeInitialMousePos.y)) * contentScale;
-            pointSelectionRectTransform.sizeDelta = areaSize;
-            pointSelectionImage.color = GS.PointSelectionColor;
-
-            for (int i = 0; i < pointSelectionOutlines.Count; i++)
-            {
-                if (i % 2 == 0) // Left and Right outlines
-                {
-                    pointSelectionOutlines[i].sizeDelta = new Vector2(GS.PointSelectionOutlineWidth, areaSize.y + (GS.PointSelectionOutlineWidth * 2));
-                    pointSelectionOutlines[i].anchoredPosition = new Vector2((i == 0 ? -1 : 1) * (areaSize.x + GS.PointSelectionOutlineWidth) / 2, 0);
-                }
-                else // Top and Bottom outlines
-                {
-                    pointSelectionOutlines[i].sizeDelta = new Vector2(areaSize.x + (GS.PointSelectionOutlineWidth * 2), GS.PointSelectionOutlineWidth);
-                    pointSelectionOutlines[i].anchoredPosition = new Vector2(0, (i == 1 ? -1 : 1) * (areaSize.y + GS.PointSelectionOutlineWidth) / 2);
-                }
-                pointSelectionOutlineImages[i].color = GS.PointSelectionOutlineColor;
-            }
-            //if (rectangleSelectionPhase == RectangleSelectionPhase.Moving)
-            //{
-            //    Vector2 newBottomLeft = new(Mathf.Min(relativeInitialMousePos.x, mousePos.x), Mathf.Min(relativeInitialMousePos.y, mousePos.y));
-            //    Vector2 newTopRight = new(Mathf.Max(relativeInitialMousePos.x, mousePos.x), Mathf.Max(relativeInitialMousePos.y, mousePos.y));
-            //    PointSelect(true, newBottomLeft, newTopRight);
-            //}
-        }
-        else
-        {
-            pointSelectionRectTransform.gameObject.SetActive(false);
-            Vector2 newBottomLeft = new(Mathf.Min(relativeInitialMousePos.x, mousePos.x), Mathf.Min(relativeInitialMousePos.y, mousePos.y));
-            Vector2 newTopRight = new(Mathf.Max(relativeInitialMousePos.x, mousePos.x), Mathf.Max(relativeInitialMousePos.y, mousePos.y));
-            //if (rectangleSelectionPhase == RectangleSelectionPhase.Release)
-            //{
-            //    PointSelect(false, newBottomLeft, newTopRight);
-            //}
-        }
-    }
-
-    private void PointSelect(bool moving, Vector2 newBottomLeft, Vector2 newTopRight)
-    {
-        for (int index = xAxisRange.x; index <= xAxisRange.y; index++)
-        {
-            Vector2 pointValue = Values[index];
-            if (pointValue.x >= newBottomLeft.x && pointValue.x <= newTopRight.x && pointValue.y >= newBottomLeft.y && pointValue.y <= newTopRight.y)
-            {
-                //if (rectangleSelectionType == RectangleSelectionType.SelectUnselect)
-                //{
-                //    if (moving)
-                //    {
-                //        if (initialLockedPoints.Contains(index) && lockedPoints.Contains(index))
-                //        {
-                //            lockedPoints.Remove(index);
-                //            recentlyLockedPoints.Add(index);
-                //        }
-                //        else if (!initialLockedPoints.Contains(index) && !lockedPoints.Contains(index))
-                //        {
-                //            lockedPoints.Add(index);
-                //            recentlyLockedPoints.Add(index);
-                //        }
-
-                //    }
-                //    else
-                //    {
-                //        if (lockedPoints.Contains(index))
-                //        {
-                //            lockedPoints.Remove(index);
-                //        }
-                //        else
-                //        {
-                //            lockedPoints.Add(index);
-                //        }
-                //    }
-                //}
-                //else
-                {
-                    if (moving)
-                    {
-                        if (!initialLockedPoints.Contains(index) && !lockedPoints.Contains(index))
-                        {
-                            lockedPoints.Add(index);
-                            recentlyLockedPoints.Add(index);
-                        }
-                    }
-                    else
-                    {
-                        if (!lockedPoints.Contains(index))
-                        {
-                            lockedPoints.Add(index);
-                        }
-                    }
-                }
-                lockedHoveredPoints.Add(index);
-                lockedHoveredPoints = lockedHoveredPoints.Distinct().ToList();
-                lockedPoints = lockedPoints.Distinct().ToList();
-            }
-        }
-        for (int i = 0; i < recentlyLockedPoints.Count; i++)
-        {
-            int index = recentlyLockedPoints[i];
-            Vector2 pointValue = Values[index];
-
-            if (!(pointValue.x >= newBottomLeft.x && pointValue.x <= newTopRight.x && pointValue.y >= newBottomLeft.y && pointValue.y <= newTopRight.y))
-            {
-                if (initialLockedPoints.Contains(index))
-                {
-                    if (!lockedPoints.Contains(index))
-                    {
-                        lockedPoints.Add(index);
-                    }
-                }
-                else
-                {
-                    if (lockedPoints.Contains(index))
-                    {
-                        lockedPoints.Remove(index);
-                    }
-                }
-            }
-            lockedHoveredPoints.Add(index);
-            lockedHoveredPoints = lockedHoveredPoints.Distinct().ToList();
-            lockedPoints = lockedPoints.Distinct().ToList();
         }
     }
 
