@@ -111,39 +111,39 @@ public class GraphHandler : MonoBehaviour
     public enum MouseActionType
     {
         Move,
-        SelectAreaToZoom,
-        SelectPoints
+        //SelectAreaToZoom,
+        //SelectPoints
     }
     public MouseActionType mouseActionType;
 
-    public enum RectangleType
-    {
-        Free,
-        PreserveAspectRatio,
-        OriginalAspectRatio
-    }
-    public RectangleType rectangleType;
+    //public enum RectangleType
+    //{
+    //    Free,
+    //    PreserveAspectRatio,
+    //    OriginalAspectRatio
+    //}
+    //public RectangleType rectangleType;
 
-    public enum RectangleSelectionType
-    {
-        SelectAll,
-        SelectUnselect
-    }
-    public RectangleSelectionType rectangleSelectionType;
+    //public enum RectangleSelectionType
+    //{
+    //    SelectAll,
+    //    SelectUnselect
+    //}
+    //public RectangleSelectionType rectangleSelectionType;
 
-    public enum RectangleSelectionPhase
-    {
-        Moving,
-        Release
-    }
-    public RectangleSelectionPhase rectangleSelectionPhase;
+    //public enum RectangleSelectionPhase
+    //{
+    //    Moving,
+    //    Release
+    //}
+    //public RectangleSelectionPhase rectangleSelectionPhase;
 
-    public enum PointSelectionType
-    {
-        Select,
-        FixZoomPoint
-    }
-    public PointSelectionType pointSelectionType;
+    //public enum PointSelectionType
+    //{
+    //    Select,
+    //    FixZoomPoint
+    //}
+    //public PointSelectionType pointSelectionType;
 
     public Vector2 targetZoom = new(1f, 1f);
     public Vector2 targetMoveOffset;
@@ -340,9 +340,11 @@ public class GraphHandler : MonoBehaviour
 
     private void Update()
     {
-        mouseActionType = Input.GetKey(KeyCode.LeftShift)
-            ? MouseActionType.SelectAreaToZoom
-            : Input.GetKey(KeyCode.LeftControl) ? MouseActionType.SelectPoints : MouseActionType.Move;
+        mouseActionType =
+            //Input.GetKey(KeyCode.LeftShift)
+            //? MouseActionType.SelectAreaToZoom
+            //: Input.GetKey(KeyCode.LeftControl) ? MouseActionType.SelectPoints : 
+            MouseActionType.Move;
 
         if (error)
         {
@@ -898,19 +900,19 @@ public class GraphHandler : MonoBehaviour
             activePointValue = Values[pointIndex];
             pointIsActive = enter;
 
-            if (pointSelectionType == PointSelectionType.Select)
-            {
-                lockedHoveredPoints.Add(pointIndex);
-                lockedHoveredPoints = lockedHoveredPoints.Distinct().ToList();
-            }
+            //if (pointSelectionType == PointSelectionType.Select)
+            //{
+            //    lockedHoveredPoints.Add(pointIndex);
+            //    lockedHoveredPoints = lockedHoveredPoints.Distinct().ToList();
+            //}
         }
         else
         {
             // Do not process PointerExit event for locked points
-            if ((lockedPoints.Contains(activePointIndex) && pointSelectionType == PointSelectionType.Select) || (fixedPointIndex == activePointIndex && pointSelectionType == PointSelectionType.FixZoomPoint))
-            {
-                return;
-            }
+            //if ((lockedPoints.Contains(activePointIndex) && pointSelectionType == PointSelectionType.Select) || (fixedPointIndex == activePointIndex && pointSelectionType == PointSelectionType.FixZoomPoint))
+            //{
+            //    return;
+            //}
 
             activePointIndex = pointIndex;
             activePointValue = Values[pointIndex];
@@ -920,20 +922,20 @@ public class GraphHandler : MonoBehaviour
 
     private void PointClicked(int pointIndex)
     {
-        if (pointSelectionType == PointSelectionType.FixZoomPoint)
-        {
-            if (fixedPointIndex != -1)
-            {
-                ChangeZoomPoint(Values[pointIndex]);
-                fixedHoveredPoints.Add(fixedPointIndex);
-            }
+        //if (pointSelectionType == PointSelectionType.FixZoomPoint)
+        //{
+        //    if (fixedPointIndex != -1)
+        //    {
+        //        ChangeZoomPoint(Values[pointIndex]);
+        //        fixedHoveredPoints.Add(fixedPointIndex);
+        //    }
 
-            fixedHoveredPoints = fixedHoveredPoints.Distinct().ToList();
+        //    fixedHoveredPoints = fixedHoveredPoints.Distinct().ToList();
 
-            fixedPointIndex = (fixedPointIndex == pointIndex) ? -1 : pointIndex;
-            ChangeZoomPoint((fixedPointIndex == -1) ? center : Values[pointIndex]);
-        }
-        else
+        //    fixedPointIndex = (fixedPointIndex == pointIndex) ? -1 : pointIndex;
+        //    ChangeZoomPoint((fixedPointIndex == -1) ? center : Values[pointIndex]);
+        //}
+        //else
         {
             if (lockedPoints.Contains(pointIndex))
             {
@@ -981,12 +983,12 @@ public class GraphHandler : MonoBehaviour
                 targetColor = GS.PointLockedColor;
                 targetSpeed = GS.PointLockedSpeed;
             }
-            else if (isActive && pointSelectionType == PointSelectionType.Select)
-            {
-                targetSize = Vector2.one * GS.PointHoverRadius;
-                targetColor = GS.PointHoverColor;
-                targetSpeed = GS.PointHoverSpeed;
-            }
+            //else if (isActive && pointSelectionType == PointSelectionType.Select)
+            //{
+            //    targetSize = Vector2.one * GS.PointHoverRadius;
+            //    targetColor = GS.PointHoverColor;
+            //    targetSpeed = GS.PointHoverSpeed;
+            //}
             else
             {
                 targetSize = Vector2.one * GS.PointRadius;
@@ -1027,12 +1029,12 @@ public class GraphHandler : MonoBehaviour
                 targetColor = GS.FixedPointOutlineColor;
                 targetSpeed = GS.FixedPointOutlineSpeed;
             }
-            else if (isActive && pointSelectionType == PointSelectionType.FixZoomPoint)
-            {
-                targetSize = new Vector2(GS.UnfixedPointOutlineHoverWidth, GS.UnfixedPointOutlineHoverWidth);
-                targetColor = GS.UnfixedPointOutlineHoverColor;
-                targetSpeed = GS.UnfixedPointOutlineHoverSpeed;
-            }
+            //else if (isActive && pointSelectionType == PointSelectionType.FixZoomPoint)
+            //{
+            //    targetSize = new Vector2(GS.UnfixedPointOutlineHoverWidth, GS.UnfixedPointOutlineHoverWidth);
+            //    targetColor = GS.UnfixedPointOutlineHoverColor;
+            //    targetSpeed = GS.UnfixedPointOutlineHoverSpeed;
+            //}
             else
             {
                 targetSize = new Vector2(GS.UnfixedPointOutlineWidth, GS.UnfixedPointOutlineWidth);
@@ -1043,9 +1045,11 @@ public class GraphHandler : MonoBehaviour
             targetSize += pointRects[numToUpdate].sizeDelta;
             RectTransform outlineRectTransform = pointOutlineRects[numToUpdate];
 
-            outlineRectTransform.sizeDelta = pointSelectionType == PointSelectionType.FixZoomPoint
-                ? Vector2.Lerp(outlineRectTransform.sizeDelta, targetSize, Time.deltaTime * targetSpeed)
-                : targetSize;
+            outlineRectTransform.sizeDelta =
+                //pointSelectionType == PointSelectionType.FixZoomPoint
+                //? Vector2.Lerp(outlineRectTransform.sizeDelta, targetSize, Time.deltaTime * targetSpeed)
+                //: 
+                targetSize;
 
             Image outlineImage = pointOutlineImages[numToUpdate];
             targetColor = Color.Lerp(outlineImage.color, targetColor, Time.deltaTime * targetSpeed);
@@ -1235,14 +1239,14 @@ public class GraphHandler : MonoBehaviour
             {
                 initialMoveOffset = moveOffset;
             }
-            else if (mouseActionType == MouseActionType.SelectPoints)
-            {
-                initialLockedPoints.Clear();
-                for (int i = 0; i < lockedPoints.Count; i++)
-                {
-                    initialLockedPoints.Add(lockedPoints[i]);
-                }
-            }
+            //else if (mouseActionType == MouseActionType.SelectPoints)
+            //{
+            //    initialLockedPoints.Clear();
+            //    for (int i = 0; i < lockedPoints.Count; i++)
+            //    {
+            //        initialLockedPoints.Add(lockedPoints[i]);
+            //    }
+            //}
             return;
         }
         if (Input.GetMouseButton(0) && initialMouseInsideBounds)
@@ -1260,37 +1264,37 @@ public class GraphHandler : MonoBehaviour
                 {
                     targetMoveOffset = initialMousePos - currentMousePos + initialMoveOffset;
                 }
-                else if (mouseActionType == MouseActionType.SelectAreaToZoom)
-                {
-                    if (!zoomSelectionRectTransform.gameObject.activeSelf)
-                    {
-                        zoomSelectionRectTransform.gameObject.SetActive(true);
-                    }
+                //else if (mouseActionType == MouseActionType.SelectAreaToZoom)
+                //{
+                //    if (!zoomSelectionRectTransform.gameObject.activeSelf)
+                //    {
+                //        zoomSelectionRectTransform.gameObject.SetActive(true);
+                //    }
 
-                    SelectAreaToZoom(false);
-                }
-                else if (mouseActionType == MouseActionType.SelectPoints)
-                {
-                    if (!pointSelectionRectTransform.gameObject.activeSelf)
-                    {
-                        pointSelectionRectTransform.gameObject.SetActive(true);
-                    }
+                //    SelectAreaToZoom(false);
+                //}
+                //else if (mouseActionType == MouseActionType.SelectPoints)
+                //{
+                //    if (!pointSelectionRectTransform.gameObject.activeSelf)
+                //    {
+                //        pointSelectionRectTransform.gameObject.SetActive(true);
+                //    }
 
-                    SelectPoints(false);
-                }
+                //    SelectPoints(false);
+                //}
             }
             previousMousePos = mousePos;
         }
         else if (Input.GetMouseButtonUp(0) && initialMouseInsideBounds)
         {
-            if (mouseActionType == MouseActionType.SelectAreaToZoom)
-            {
-                SelectAreaToZoom(true);
-            }
-            else if (mouseActionType == MouseActionType.SelectPoints)
-            {
-                SelectPoints(true);
-            }
+            //if (mouseActionType == MouseActionType.SelectAreaToZoom)
+            //{
+            //    SelectAreaToZoom(true);
+            //}
+            //else if (mouseActionType == MouseActionType.SelectPoints)
+            //{
+            //    SelectPoints(true);
+            //}
 
             recentlyLockedPoints.Clear();
         }
@@ -1307,14 +1311,14 @@ public class GraphHandler : MonoBehaviour
                 {
                     initialMoveOffset = moveOffset;
                 }
-                else if (mouseActionType == MouseActionType.SelectPoints)
-                {
-                    initialLockedPoints.Clear();
-                    for (int i = 0; i < lockedPoints.Count; i++)
-                    {
-                        initialLockedPoints.Add(lockedPoints[i]);
-                    }
-                }
+                //else if (mouseActionType == MouseActionType.SelectPoints)
+                //{
+                //    initialLockedPoints.Clear();
+                //    for (int i = 0; i < lockedPoints.Count; i++)
+                //    {
+                //        initialLockedPoints.Add(lockedPoints[i]);
+                //    }
+                //}
 
             }
             else if (touch.phase == TouchPhase.Moved && initialMouseInsideBounds)
@@ -1324,35 +1328,35 @@ public class GraphHandler : MonoBehaviour
                     Vector2 currentTouchPos = touch.position;
                     targetMoveOffset = initialMousePos - currentTouchPos + initialMoveOffset;
                 }
-                else if (mouseActionType == MouseActionType.SelectAreaToZoom)
-                {
-                    if (!zoomSelectionRectTransform.gameObject.activeSelf)
-                    {
-                        zoomSelectionRectTransform.gameObject.SetActive(true);
-                    }
+                //else if (mouseActionType == MouseActionType.SelectAreaToZoom)
+                //{
+                //    if (!zoomSelectionRectTransform.gameObject.activeSelf)
+                //    {
+                //        zoomSelectionRectTransform.gameObject.SetActive(true);
+                //    }
 
-                    SelectAreaToZoom(false);
-                }
-                else if (mouseActionType == MouseActionType.SelectPoints)
-                {
-                    if (!pointSelectionRectTransform.gameObject.activeSelf)
-                    {
-                        pointSelectionRectTransform.gameObject.SetActive(true);
-                    }
+                //    SelectAreaToZoom(false);
+                //}
+                //else if (mouseActionType == MouseActionType.SelectPoints)
+                //{
+                //    if (!pointSelectionRectTransform.gameObject.activeSelf)
+                //    {
+                //        pointSelectionRectTransform.gameObject.SetActive(true);
+                //    }
 
-                    SelectPoints(false);
-                }
+                //    SelectPoints(false);
+                //}
             }
             else if (touch.phase == TouchPhase.Ended && initialMouseInsideBounds)
             {
-                if (mouseActionType == MouseActionType.SelectAreaToZoom)
-                {
-                    SelectAreaToZoom(true);
-                }
-                else if (mouseActionType == MouseActionType.SelectPoints)
-                {
-                    SelectPoints(true);
-                }
+                //if (mouseActionType == MouseActionType.SelectAreaToZoom)
+                //{
+                //    SelectAreaToZoom(true);
+                //}
+                //else if (mouseActionType == MouseActionType.SelectPoints)
+                //{
+                //    SelectPoints(true);
+                //}
 
                 recentlyLockedPoints.Clear();
             }
@@ -1366,7 +1370,14 @@ public class GraphHandler : MonoBehaviour
         Vector2 preserveAspectRatioCorner = new(mousePos.x, relativeInitialMousePos.y + ((mousePos.x - relativeInitialMousePos.x) / GS.GraphSize.x * GS.GraphSize.y * contentScale.x / contentScale.y));
         Vector2 originalAspectRatioCorner = new(mousePos.x, relativeInitialMousePos.y + (mousePos.x - relativeInitialMousePos.x));
 
-        Vector2 newCorner = rectangleType == RectangleType.Free ? mousePos : (rectangleType == RectangleType.PreserveAspectRatio ? preserveAspectRatioCorner : originalAspectRatioCorner);
+        Vector2 newCorner = 
+            //rectangleType == RectangleType.Free 
+            //? mousePos 
+            //: (rectangleType == RectangleType.PreserveAspectRatio 
+            //    ? preserveAspectRatioCorner : 
+                originalAspectRatioCorner
+                //)
+                ;
         if (!release)
         {
             zoomSelectionRectTransform.anchoredPosition = (relativeInitialMousePos + ((newCorner - relativeInitialMousePos) / 2f)) * contentScale;
@@ -1428,22 +1439,22 @@ public class GraphHandler : MonoBehaviour
                 }
                 pointSelectionOutlineImages[i].color = GS.PointSelectionOutlineColor;
             }
-            if (rectangleSelectionPhase == RectangleSelectionPhase.Moving)
-            {
-                Vector2 newBottomLeft = new(Mathf.Min(relativeInitialMousePos.x, mousePos.x), Mathf.Min(relativeInitialMousePos.y, mousePos.y));
-                Vector2 newTopRight = new(Mathf.Max(relativeInitialMousePos.x, mousePos.x), Mathf.Max(relativeInitialMousePos.y, mousePos.y));
-                PointSelect(true, newBottomLeft, newTopRight);
-            }
+            //if (rectangleSelectionPhase == RectangleSelectionPhase.Moving)
+            //{
+            //    Vector2 newBottomLeft = new(Mathf.Min(relativeInitialMousePos.x, mousePos.x), Mathf.Min(relativeInitialMousePos.y, mousePos.y));
+            //    Vector2 newTopRight = new(Mathf.Max(relativeInitialMousePos.x, mousePos.x), Mathf.Max(relativeInitialMousePos.y, mousePos.y));
+            //    PointSelect(true, newBottomLeft, newTopRight);
+            //}
         }
         else
         {
             pointSelectionRectTransform.gameObject.SetActive(false);
             Vector2 newBottomLeft = new(Mathf.Min(relativeInitialMousePos.x, mousePos.x), Mathf.Min(relativeInitialMousePos.y, mousePos.y));
             Vector2 newTopRight = new(Mathf.Max(relativeInitialMousePos.x, mousePos.x), Mathf.Max(relativeInitialMousePos.y, mousePos.y));
-            if (rectangleSelectionPhase == RectangleSelectionPhase.Release)
-            {
-                PointSelect(false, newBottomLeft, newTopRight);
-            }
+            //if (rectangleSelectionPhase == RectangleSelectionPhase.Release)
+            //{
+            //    PointSelect(false, newBottomLeft, newTopRight);
+            //}
         }
     }
 
@@ -1454,35 +1465,35 @@ public class GraphHandler : MonoBehaviour
             Vector2 pointValue = Values[index];
             if (pointValue.x >= newBottomLeft.x && pointValue.x <= newTopRight.x && pointValue.y >= newBottomLeft.y && pointValue.y <= newTopRight.y)
             {
-                if (rectangleSelectionType == RectangleSelectionType.SelectUnselect)
-                {
-                    if (moving)
-                    {
-                        if (initialLockedPoints.Contains(index) && lockedPoints.Contains(index))
-                        {
-                            lockedPoints.Remove(index);
-                            recentlyLockedPoints.Add(index);
-                        }
-                        else if (!initialLockedPoints.Contains(index) && !lockedPoints.Contains(index))
-                        {
-                            lockedPoints.Add(index);
-                            recentlyLockedPoints.Add(index);
-                        }
+                //if (rectangleSelectionType == RectangleSelectionType.SelectUnselect)
+                //{
+                //    if (moving)
+                //    {
+                //        if (initialLockedPoints.Contains(index) && lockedPoints.Contains(index))
+                //        {
+                //            lockedPoints.Remove(index);
+                //            recentlyLockedPoints.Add(index);
+                //        }
+                //        else if (!initialLockedPoints.Contains(index) && !lockedPoints.Contains(index))
+                //        {
+                //            lockedPoints.Add(index);
+                //            recentlyLockedPoints.Add(index);
+                //        }
 
-                    }
-                    else
-                    {
-                        if (lockedPoints.Contains(index))
-                        {
-                            lockedPoints.Remove(index);
-                        }
-                        else
-                        {
-                            lockedPoints.Add(index);
-                        }
-                    }
-                }
-                else
+                //    }
+                //    else
+                //    {
+                //        if (lockedPoints.Contains(index))
+                //        {
+                //            lockedPoints.Remove(index);
+                //        }
+                //        else
+                //        {
+                //            lockedPoints.Add(index);
+                //        }
+                //    }
+                //}
+                //else
                 {
                     if (moving)
                     {
