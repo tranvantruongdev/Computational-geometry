@@ -232,12 +232,13 @@ public class GraphHandler : MonoBehaviour
     public void DrawQuadraticFunction()
     {
         float y;
+
+        int AValue = int.Parse(ifA.text.Trim());
+        int BValue = int.Parse(ifB.text.Trim());
+        int CValue = int.Parse(ifC.text.Trim());
+
         for (float x = -3f; x <= 3f; x += 0.2f)
         {
-            int AValue = int.Parse(ifA.text.Trim());
-            int BValue = int.Parse(ifB.text.Trim());
-            int CValue = int.Parse(ifC.text.Trim());
-
             y = BValue == 0
                 ? (AValue * x * x) + CValue
                 : (AValue * x * x) + (BValue * x) + CValue;
