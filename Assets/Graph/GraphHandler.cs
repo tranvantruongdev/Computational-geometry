@@ -509,59 +509,56 @@ public class GraphHandler : MonoBehaviour
         return outline;
     }
 
-    private void CreateGridLines(bool createX)
+    private void CreateGridLineY()
     {
-        if (createX)
+        GameObject yGrid = new("yGrid" + yGridRects.Count);
+        yGrid.transform.SetParent(gridParent.transform);
+        Image yGridImage = yGrid.AddComponent<Image>();
+        yGridImage.raycastTarget = false;
+        yGridRects.Add(yGrid.GetComponent<RectTransform>());
+        yGridImages.Add(yGridImage);
+        if (yGridRects.Count > 1)
         {
-            GameObject xGrid = new("xGrid" + xGridRects.Count);
-            xGrid.transform.SetParent(gridParent.transform);
-            Image xGridImage = xGrid.AddComponent<Image>();
-            xGridImage.raycastTarget = false;
-            xGridRects.Add(xGrid.GetComponent<RectTransform>());
-            xGridImages.Add(xGridImage);
-            if (xGridRects.Count > 1)
-            {
-                TextMeshProUGUI xText = new GameObject("xText" + xGridRects.Count).AddComponent<TextMeshProUGUI>();
-                RectTransform textRect = xText.gameObject.GetComponent<RectTransform>();
-                textRect.SetParent(xGrid.GetComponent<RectTransform>());
-                xText.font = GS.GridTextFont;
-                xText.fontStyle = FontStyles.Bold;
-                xText.fontStyle = FontStyles.Bold;
-                xText.alignment = TextAlignmentOptions.Center;
-                xText.verticalAlignment = VerticalAlignmentOptions.Middle;
-                xText.color = GS.XAxisTextColor;
-                xText.enableAutoSizing = true;
-                textRect.sizeDelta = Vector2.one * GS.XAxisTextSize;
-                xText.raycastTarget = false;
-                xAxisTexts.Add(xText);
-                xAxisTextRects.Add(textRect);
-            }
+            TextMeshProUGUI yText = new GameObject("yText" + yGridRects.Count).AddComponent<TextMeshProUGUI>();
+            RectTransform textRect = yText.gameObject.GetComponent<RectTransform>();
+            textRect.SetParent(yGrid.GetComponent<RectTransform>());
+            yText.font = GS.GridTextFont;
+            yText.fontStyle = FontStyles.Bold;
+            yText.alignment = TextAlignmentOptions.Center;
+            yText.verticalAlignment = VerticalAlignmentOptions.Middle;
+            yText.color = GS.YAxisTextColor;
+            yText.enableAutoSizing = true;
+            textRect.sizeDelta = Vector2.one * GS.YAxisTextSize;
+            yText.raycastTarget = false;
+            yAxisTexts.Add(yText);
+            yAxisTextRects.Add(textRect);
         }
-        else
-        {
-            GameObject yGrid = new("yGrid" + yGridRects.Count);
-            yGrid.transform.SetParent(gridParent.transform);
-            Image yGridImage = yGrid.AddComponent<Image>();
-            yGridImage.raycastTarget = false;
-            yGridRects.Add(yGrid.GetComponent<RectTransform>());
-            yGridImages.Add(yGridImage);
-            if (yGridRects.Count > 1)
-            {
-                TextMeshProUGUI yText = new GameObject("yText" + yGridRects.Count).AddComponent<TextMeshProUGUI>();
-                RectTransform textRect = yText.gameObject.GetComponent<RectTransform>();
-                textRect.SetParent(yGrid.GetComponent<RectTransform>());
-                yText.font = GS.GridTextFont;
-                yText.fontStyle = FontStyles.Bold;
-                yText.alignment = TextAlignmentOptions.Center;
-                yText.verticalAlignment = VerticalAlignmentOptions.Middle;
-                yText.color = GS.YAxisTextColor;
-                yText.enableAutoSizing = true;
-                textRect.sizeDelta = Vector2.one * GS.YAxisTextSize;
-                yText.raycastTarget = false;
-                yAxisTexts.Add(yText);
-                yAxisTextRects.Add(textRect);
-            }
+    }
 
+    private void CreateGridLineX()
+    {
+        GameObject xGrid = new("xGrid" + xGridRects.Count);
+        xGrid.transform.SetParent(gridParent.transform);
+        Image xGridImage = xGrid.AddComponent<Image>();
+        xGridImage.raycastTarget = false;
+        xGridRects.Add(xGrid.GetComponent<RectTransform>());
+        xGridImages.Add(xGridImage);
+        if (xGridRects.Count > 1)
+        {
+            TextMeshProUGUI xText = new GameObject("xText" + xGridRects.Count).AddComponent<TextMeshProUGUI>();
+            RectTransform textRect = xText.gameObject.GetComponent<RectTransform>();
+            textRect.SetParent(xGrid.GetComponent<RectTransform>());
+            xText.font = GS.GridTextFont;
+            xText.fontStyle = FontStyles.Bold;
+            xText.fontStyle = FontStyles.Bold;
+            xText.alignment = TextAlignmentOptions.Center;
+            xText.verticalAlignment = VerticalAlignmentOptions.Middle;
+            xText.color = GS.XAxisTextColor;
+            xText.enableAutoSizing = true;
+            textRect.sizeDelta = Vector2.one * GS.XAxisTextSize;
+            xText.raycastTarget = false;
+            xAxisTexts.Add(xText);
+            xAxisTextRects.Add(textRect);
         }
     }
 
@@ -961,17 +958,19 @@ public class GraphHandler : MonoBehaviour
     {
         Vector2 GridStartPoint;
         Vector2 spacing = CalculateGridSpacing();
-        GridStartPoint = new Vector2(Mathf.Ceil(bottomLeft.x * spacing.x) / spacing.x, Mathf.Ceil(bottomLeft.y * spacing.y) / spacing.y) * contentScale;
+        GridStartPoint = new Vector2(
+            Mathf.Ceil(bottomLeft.x * spacing.x) / spacing.x,
+            Mathf.Ceil(bottomLeft.y * spacing.y) / spacing.y) * contentScale;
         int2 eventualOverlay = new(-1, -1);
         int requiredYGridlines = Mathf.CeilToInt((topRight.y - bottomLeft.y) * spacing.y) + 1;
         int requiredXGridlines = Mathf.CeilToInt((topRight.x - bottomLeft.x) * spacing.x) + 1;
         while (xGridRects.Count <= requiredXGridlines)
         {
-            CreateGridLines(true);
+            CreateGridLineX();
         }
         while (yGridRects.Count <= requiredYGridlines)
         {
-            CreateGridLines(false);
+            CreateGridLineY();
         }
 
         for (int i = 0; i < requiredXGridlines; i++)
