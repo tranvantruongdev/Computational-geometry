@@ -49,14 +49,8 @@ public class GraphHandler : MonoBehaviour
     private List<TextMeshProUGUI>       yAxisTexts;
     private List<RectTransform>         yAxisTextRects;
 
-    private RectTransform               zoomSelectionRectTransform;
-    private Image                       zoomSelectionImage;
-    private List<RectTransform>         zoomSelectionOutlines;
-    private List<Image>                 zoomSelectionOutlineImages;
-    private RectTransform               pointSelectionRectTransform;
-    private Image                       pointSelectionImage;
-    private List<RectTransform>         pointSelectionOutlines;
-    private List<Image>                 pointSelectionOutlineImages;
+    private readonly RectTransform      zoomSelectionRectTransform;
+    private readonly RectTransform      pointSelectionRectTransform;
 
     private RectTransform               maskObj;
     private Image                       backgroundImage;
@@ -284,10 +278,6 @@ public class GraphHandler : MonoBehaviour
         yAxisTexts = new List<TextMeshProUGUI>();
         xAxisTextRects = new List<RectTransform>();
         yAxisTextRects = new List<RectTransform>();
-        zoomSelectionOutlines = new List<RectTransform>();
-        zoomSelectionOutlineImages = new List<Image>();
-        pointSelectionOutlines = new List<RectTransform>();
-        pointSelectionOutlineImages = new List<Image>();
         outlines = new List<RectTransform>();
         outlineImages = new List<Image>();
         lockedHoveredPoints = new List<int>();
@@ -562,37 +552,6 @@ public class GraphHandler : MonoBehaviour
         }
     }
 
-    private void CreateSelectionTypes()
-    {
-        GameObject selectionParent = new("SelectionParent");
-        selectionParent.transform.SetParent(graphContent);
-        selectionParent.AddComponent<RectTransform>().anchoredPosition = new Vector2(0f, 0f);
-        zoomSelectionImage = new GameObject("ZoomSelection").AddComponent<Image>();
-        zoomSelectionRectTransform = zoomSelectionImage.GetComponent<RectTransform>();
-        zoomSelectionRectTransform.SetParent(selectionParent.transform);
-        for (int i = 0; i < 4; i++)
-        {
-            Image image = new GameObject("Outline").AddComponent<Image>();
-            RectTransform rect = image.GetComponent<RectTransform>();
-            rect.SetParent(zoomSelectionRectTransform);
-            zoomSelectionOutlineImages.Add(image);
-            zoomSelectionOutlines.Add(rect);
-        }
-        zoomSelectionRectTransform.gameObject.SetActive(false);
-        pointSelectionImage = new GameObject("PointSelection").AddComponent<Image>();
-        pointSelectionRectTransform = pointSelectionImage.GetComponent<RectTransform>();
-        pointSelectionRectTransform.SetParent(selectionParent.transform);
-        for (int i = 0; i < 4; i++)
-        {
-            Image image = new GameObject("Outline").AddComponent<Image>();
-            RectTransform rect = image.GetComponent<RectTransform>();
-            rect.SetParent(pointSelectionRectTransform);
-            pointSelectionOutlineImages.Add(image);
-            pointSelectionOutlines.Add(rect);
-        }
-        pointSelectionRectTransform.gameObject.SetActive(false);
-    }
-
     private void CheckIfUpdateGraph()
     {
         CalculateMousePosition();
@@ -853,25 +812,6 @@ public class GraphHandler : MonoBehaviour
         else
         {
             lockedPoints.Add(pointIndex);
-        }
-    }
-
-    private void UpdatePointVisuals()
-    {
-        if (xAxisRange.x == -1 || xAxisRange.y == -1)
-        {
-            return;
-        }
-
-        for (int i = xAxisRange.x; i <= xAxisRange.y; i++)
-        {
-            if (activePointIndex == sortedIndices[i])
-            {
-                continue;
-            }
-
-            lockedHoveredPoints.Add(sortedIndices[i]);
-            fixedHoveredPoints.Add(sortedIndices[i]);
         }
     }
 
