@@ -3024,20 +3024,20 @@ MonoBehaviour:
   fixedPointOutlineColor: {r: 0, g: 0.8, b: 1, a: 1}
   GridTextFont: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   gridSpacing: {x: 1, y: 1}
-  xAxisWidth: 3
+  xAxisWidth: 6
   xAxisColor: {r: 0, g: 0.8, b: 1, a: 1}
   xAxisTextColor: {r: 0, g: 0.8, b: 1, a: 1}
   xAxisTextSize: 10
   xAxisTextOffset: 10
-  yAxisWidth: 3
+  yAxisWidth: 6
   yAxisColor: {r: 0, g: 0.8, b: 1, a: 1}
   yAxisTextColor: {r: 0, g: 0.8, b: 1, a: 1}
   yAxisTextSize: 10
   yAxisTextOffset: 10
   xGridWidth: 2
-  xGridColor: {r: 0, g: 0.8, b: 1, a: 0.6}
+  xGridColor: {r: 0, g: 0.8, b: 1, a: 0.29803923}
   yGridWidth: 2
-  yGridColor: {r: 0, g: 0.8, b: 1, a: 0.6}
+  yGridColor: {r: 0, g: 0.8, b: 1, a: 0.29803923}
   zoomSelectionColor: {r: 0, g: 0.8, b: 1, a: 0.2}
   zoomSelectionOutlineWidth: 5
   zoomSelectionOutlineColor: {r: 0, g: 0.8, b: 1, a: 0.6}
@@ -3067,10 +3067,6 @@ MonoBehaviour:
   activePointIndex: -1
   fixedPointIndex: -1
   mouseActionType: 0
-  rectangleType: 0
-  rectangleSelectionType: 0
-  rectangleSelectionPhase: 0
-  pointSelectionType: 0
   targetZoom: {x: 1.5, y: 1.5}
   targetMoveOffset: {x: -1500, y: -555}
 --- !u!114 &2010626710
