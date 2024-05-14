@@ -194,20 +194,31 @@ public class GraphHandler : MonoBehaviour
 
     public void DrawQuadraticFunction()
     {
-        float y;
-
+        List<Vector2> vectors = new();
         int AValue = int.Parse(ifA.text.Trim());
         int BValue = int.Parse(ifB.text.Trim());
         int CValue = int.Parse(ifC.text.Trim());
+        float xMin = -BValue / (2f * AValue);
 
-        for (float x = -3f; x <= 3f; x += 0.2f)
+        Func<float, float> getY = new(x => (AValue * x * x) + (BValue * x) + CValue);
+
+        for (int i = 0; i < 15; i++)
         {
-            y = BValue == 0
-                ? (AValue * x * x) + CValue
-                : (AValue * x * x) + (BValue * x) + CValue;
+            if (i == 0)
+            {
+                vectors.Add(new Vector2(xMin, getY(xMin)));
+            }
+            else
+            {
+                float step = i * 0.25f;
+                vectors.Insert(0, new Vector2(xMin - step, getY(xMin - step)));
+                vectors.Add(new Vector2(xMin + step, getY(xMin + step)));
+            }
+        }
 
-            Vector2 point = new(x, y);
-            CreatePoint(point);
+        foreach (Vector2 vector in vectors)
+        {
+            CreatePoint(vector);
         }
 
         UpdateGraph();
