@@ -247,8 +247,6 @@ public class GraphHandler : MonoBehaviour
         }
         pointOutlines.Clear();
 
-        Values.Clear();
-
         sortedIndices.Clear();
 
         pointRects.Clear();
