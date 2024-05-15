@@ -18,6 +18,7 @@ public class GraphHandler : MonoBehaviour
     [SerializeField] private TMP_InputField ifA;
     [SerializeField] private TMP_InputField ifB;
     [SerializeField] private TMP_InputField ifC;
+    [SerializeField] private RectTransform background;
 
     private GraphSettings       GS;
     private RectTransform       graph;
@@ -79,6 +80,7 @@ public class GraphHandler : MonoBehaviour
     private Vector2         zoomPoint = Vector2.zero;
     private Vector2         absoluteZoomPoint = Vector2.zero;
     private Vector2         zoom = new(1f, 1f);
+    private Vector2         startSize;
 
     private Vector2         moveOffset;
     private Vector2         initialMoveOffset = Vector2.zero;
@@ -220,12 +222,45 @@ public class GraphHandler : MonoBehaviour
         }
 
         UpdateGraph();
+
+        Vector2 min = Vector2.positiveInfinity;
+        Vector2 max = Vector2.negativeInfinity;
+        Debug.Log(background.rect.size);
+
+        foreach (RectTransform rectTransform in lineRects) {
+            if (rectTransform.rect.min.x < min.x) {
+                min.x = rectTransform.rect.min.x;
+            }
+            if (rectTransform.rect.min.y < min.y) {
+                min.y = rectTransform.rect.min.y;
+            }
+
+            if (rectTransform.rect.max.x > max.x) {
+                max.x = rectTransform.rect.max.x;
+            }
+
+            if (rectTransform.rect.max.y > max.y) {
+                max.y = rectTransform.rect.max.y;
+            }
+        }
+
+        Debug.Log("min: " + min);
+        Debug.Log("max: " + max);
+        Vector2 offset = new Vector2(20, 0);
+        Debug.Log("start size: " + startSize / 2);
+        Debug.Log("background: " + background.rect.size / 2);
+        Debug.Log("offset: " + offset);
+
         SetCornerValuesInternal(
-            new(
-                xMin - 10f,
-                vectors[vectors.Count / 2].y - 1.5f),
-            new(
-                vectors[^1].x + 1.5f, vectors[^1].y + 1.5f));
+            min - offset,
+            max - offset);
+
+        //SetCornerValuesInternal(
+        //    new(
+        //        xMin - 10f,
+        //        vectors[vectors.Count / 2].y - 1.5f),
+        //    new(
+        //        vectors[^1].x + 1.5f, vectors[^1].y + 1.5f));
     }
 
     public void Clear()
@@ -298,6 +333,7 @@ public class GraphHandler : MonoBehaviour
         initialLockedPoints = new List<int>();
         recentlyLockedPoints = new List<int>();
         fixedHoveredPoints = new List<int>();
+        startSize = canvas.GetComponent<RectTransform>().rect.size;
     }
 
     private void Start()

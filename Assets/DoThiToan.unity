@@ -3063,6 +3063,7 @@ MonoBehaviour:
   ifA: {fileID: 199543712}
   ifB: {fileID: 2123723085}
   ifC: {fileID: 1718240329}
+  background: {fileID: 1387412155}
   updateGraph: 1
   activePointIndex: -1
   fixedPointIndex: -1
