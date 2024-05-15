@@ -1053,9 +1053,9 @@ public class GraphHandler : MonoBehaviour
             return;
         }
 
-        if (targetZoom.x < 1.012735f)
+        if (targetZoom.x < 1.01f)
         {
-            targetZoom.x = targetZoom.y = 1.012735f;
+            targetZoom.x = targetZoom.y = 1.01f;
         }
     }
 
