@@ -156,8 +156,7 @@ public class GraphHandler : MonoBehaviour
         }
 
         UpdateGraph();
-        targetZoom = new(1.030771f, 1.030771f);
-        targetMoveOffset = new(-1347.53f, -547.9221f);
+        SetCornerValuesInternal(new(-13f, -5f), new(5.5f, 5.5f));
     }
 
     public void DrawCosGraph()
@@ -168,8 +167,7 @@ public class GraphHandler : MonoBehaviour
         }
 
         UpdateGraph();
-        targetZoom = new(1.030771f, 1.030771f);
-        targetMoveOffset = new(-1347.53f, -547.9221f);
+        SetCornerValuesInternal(new(-13f, -5f), new(5.5f, 5.5f));
     }
 
     public void DrawTanGraph()
