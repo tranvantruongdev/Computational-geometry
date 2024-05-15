@@ -1049,9 +1049,9 @@ public class GraphHandler : MonoBehaviour
 
         targetZoom = zoom + (GS.ZoomSpeed * Input.mouseScrollDelta.y * zoom / 100f);
 
-        if (targetZoom.x > 1.971156f)
+        if (targetZoom.x > 1.99f)
         {
-            targetZoom.x = targetZoom.y = 1.971156f;
+            targetZoom.x = targetZoom.y = 1.99f;
             return;
         }
 
