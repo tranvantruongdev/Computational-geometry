@@ -3044,9 +3044,9 @@ MonoBehaviour:
   pointSelectionColor: {r: 1, g: 0.35, b: 0, a: 0.2}
   pointSelectionOutlineWidth: 5
   pointSelectionOutlineColor: {r: 1, g: 0.35, b: 0, a: 0.4}
-  ZoomSpeed: 5
-  SmoothZoomSpeed: 20
-  SmoothMoveSpeed: 20
+  ZoomSpeed: 10
+  SmoothZoomSpeed: 30
+  SmoothMoveSpeed: 30
 --- !u!114 &2010626709
 MonoBehaviour:
   m_ObjectHideFlags: 0
