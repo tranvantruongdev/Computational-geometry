@@ -220,6 +220,12 @@ public class GraphHandler : MonoBehaviour
         }
 
         UpdateGraph();
+        SetCornerValuesInternal(
+            new(
+                xMin - 10f,
+                vectors[vectors.Count / 2].y - 1.5f),
+            new(
+                vectors[^1].x + 1.5f, vectors[^1].y + 1.5f));
     }
 
     public void Clear()
