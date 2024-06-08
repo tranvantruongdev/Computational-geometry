@@ -41,22 +41,23 @@ public class Graph : MonoBehaviour
         if (Camera.main.transform.position.x > _lastPosition.x)
         {
             Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
-            g.transform.position = min;
-            OnCameraMoveToRight(min);
+            OnCameraMoveRight(min);
         }
         else if (Camera.main.transform.position.x < _lastPosition.x)
         {
             Vector3 max = CameraHelper.GetMaxViewFromCameraTo(Camera.main, transform);
-            OnCameraMoveToLeft(max);
+            OnCameraMoveLeft(max);
         }
 
-        if (transform.position.y > _lastPosition.y)
+        if (Camera.main.transform.position.y > _lastPosition.y)
         {
-
+            Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
+            OnCameraMoveUp(min);
         }
-        else if (transform.position.y < _lastPosition.y)
+        else if (Camera.main.transform.position.y < _lastPosition.y)
         {
-
+            Vector3 max = CameraHelper.GetMaxViewFromCameraTo(Camera.main, transform);
+            OnCameraMoveDown(max);
         }
 
         _lastPosition = Camera.main.transform.position;
@@ -70,50 +71,79 @@ public class Graph : MonoBehaviour
         Gizmos.DrawCube(fieldOfView, fieldOfViewSize);
     }
 
-    private void OnCameraMoveToRight(Vector3 min)
+    private void OnCameraMoveRight(Vector3 min)
     {
         for (int i = 0; i < _lineX.Length; i++)
         {
             if (_lineX[i].GetPosition(1).x < min.x)
             {
                 LineRenderer largestLine = GetLargestLineX(_lineX);
-                Debug.Log($"largest: {largestLine.GetPosition(1).x}");
-                SetLineColors(largestLine, Color.magenta, Color.cyan);
 
-                Vector3[] positions = GetLineXTo(largestLine, 1);
-                SetLineXToPosition(_lineX[i], positions);
+                Vector3[] positions = GetLineTo(largestLine, Vector3.right);
+                SetLineToPosition(_lineX[i], positions);
+                AutoSetLineColorX(_lineX[i]);
             }
         }
     }
 
-    private void OnCameraMoveToLeft(Vector3 max)
+    private void OnCameraMoveUp(Vector3 min)
+    {
+        for (int i = 0; i < _lineY.Length; i++)
+        {
+            if (_lineY[i].GetPosition(1).y < min.y)
+            {
+                LineRenderer largestLine = GetLargestLineY(_lineY);
+
+                Vector3[] positions = GetLineTo(largestLine, Vector3.up);
+                SetLineToPosition(_lineY[i], positions);
+                AutoSetLineColorY(_lineY[i]);
+            }
+        }
+    }
+
+    private void OnCameraMoveLeft(Vector3 max)
     {
         for (int i = _lineX.Length - 1; i >= 0; i--)
         {
             if (_lineX[i].GetPosition(1).x > max.x)
             {
                 LineRenderer smallestLine = GetSmallestLineX(_lineX);
-                SetLineColors(smallestLine, Color.red, Color.cyan);
 
-                Vector3[] positions = GetLineXTo(smallestLine, -1);
-                SetLineXToPosition(_lineX[i], positions);
+                Vector3[] positions = GetLineTo(smallestLine, Vector3.left);
+                SetLineToPosition(_lineX[i], positions);
+                AutoSetLineColorX(_lineX[i]);
             }
         }
     }
 
-    private Vector3[] GetLineXTo(LineRenderer line, float value)
+    private void OnCameraMoveDown(Vector3 max)
+    {
+        for (int i = _lineY.Length - 1; i >= 0; i--)
+        {
+            if (_lineY[i].GetPosition(1).y > max.y)
+            {
+                LineRenderer smallestLine = GetSmallestLineY(_lineY);
+
+                Vector3[] positions = GetLineTo(smallestLine, Vector3.down);
+                SetLineToPosition(_lineY[i], positions);
+                AutoSetLineColorY(_lineY[i]);
+            }
+        }
+    }
+
+    private Vector3[] GetLineTo(LineRenderer line, Vector3 add)
     {
         Vector3[] positions = new Vector3[2];
 
         positions[0] = line.GetPosition(0);
-        positions[0].x += value;
+        positions[0] += add;
 
         positions[1] = line.GetPosition(1);
-        positions[1].x += value;
+        positions[1] += add;
         return positions;
     }
 
-    private void SetLineXToPosition(LineRenderer line, Vector3[] linePositions)
+    private void SetLineToPosition(LineRenderer line, Vector3[] linePositions)
     {
         for (int i = 0; i < 2; i++)
         {
@@ -136,6 +166,21 @@ public class Graph : MonoBehaviour
         return lines[index];
     }
 
+    private LineRenderer GetLargestLineY(LineRenderer[] lines)
+    {
+        float y = float.NegativeInfinity;
+        int index = 0;
+        for (int i = lines.Length - 1; i >= 0; i--)
+        {
+            if (y < lines[i].GetPosition(1).y)
+            {
+                y = lines[i].GetPosition(1).y;
+                index = i;
+            }
+        }
+        return lines[index];
+    }
+
     private LineRenderer GetSmallestLineX(LineRenderer[] lines)
     {
         float x = float.PositiveInfinity;
@@ -151,6 +196,21 @@ public class Graph : MonoBehaviour
         return lines[index];
     }
 
+    private LineRenderer GetSmallestLineY(LineRenderer[] lines)
+    {
+        float y = float.PositiveInfinity;
+        int index = 0;
+        for (int i = 0; i < lines.Length; i++)
+        {
+            if (y > lines[i].GetPosition(1).y)
+            {
+                y = lines[i].GetPosition(1).y;
+                index = i;
+            }
+        }
+        return lines[index];
+    }
+
     private void CreateLinesY()
     {
         _lineY = new LineRenderer[_line.y * 2];
@@ -160,18 +220,23 @@ public class Graph : MonoBehaviour
             _lineY[i] = Instantiate(_linePrefab, transform);
             SetLineY(_lineY[i], y);
 
-            if (y != 0)
-            {
-                SetLineColors(_lineY[i], _lineColor, _lineColor);
-            }
-            else
-            {
-                SetLineColors(_lineY[i], _yColor, _yColor);
-            }
+            AutoSetLineColorY(_lineY[i]);
             y++;
         }
     }
-
+    
+    private void AutoSetLineColorY(LineRenderer line)
+    {
+        if (line.GetPosition(0).y != 0)
+        {
+            SetLineColors(line, _lineColor, _lineColor);
+        }
+        else
+        {
+            SetLineColors(line, _yColor, _yColor);
+        }
+    }
+    
     private void CreateLinesX()
     {
         _lineX = new LineRenderer[_line.x * 2];
@@ -180,16 +245,20 @@ public class Graph : MonoBehaviour
         {
             _lineX[i] = Instantiate(_linePrefab, transform);
             SetLineX(_lineX[i], x);
-
-            if (x != 0)
-            {
-                SetLineColors(_lineX[i], _lineColor, _lineColor);
-            }
-            else
-            {
-                SetLineColors(_lineX[i], _xColor, _xColor);
-            }
+            AutoSetLineColorX(_lineX[i]);
             x++;
+        }
+    }
+
+    private void AutoSetLineColorX(LineRenderer line)
+    {
+        if (line.GetPosition(0).x != 0)
+        {
+            SetLineColors(line, _lineColor, _lineColor);
+        }
+        else
+        {
+            SetLineColors(line, _xColor, _xColor);
         }
     }
 
