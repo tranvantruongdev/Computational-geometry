@@ -25,14 +25,11 @@ public class Graph : MonoBehaviour
     [SerializeField]
     private Color _lineColor;
 
-    private GameObject g;
-
     private void Start()
     {
         CreateLinesX();
         CreateLinesY();
         _lastPosition = Camera.main.transform.position;
-        g = new GameObject("l");
     }
 
     private void Update()
@@ -233,7 +230,7 @@ public class Graph : MonoBehaviour
         }
         else
         {
-            SetLineColors(line, _yColor, _yColor);
+            SetLineColors(line, _xColor, _xColor);
         }
     }
     
@@ -258,7 +255,7 @@ public class Graph : MonoBehaviour
         }
         else
         {
-            SetLineColors(line, _xColor, _xColor);
+            SetLineColors(line, _yColor, _yColor);
         }
     }
 
