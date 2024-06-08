@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/DoThiToan.unity
+    path: Assets/Scenes/DoThiToan.unity
     guid: 7e68f9c39dd6db34983431e51edaa921
   m_configObjects: {}
