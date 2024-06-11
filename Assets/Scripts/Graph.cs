@@ -1,9 +1,11 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Graph : MonoBehaviour
 {
-    private LineRenderer[] _lineX;
-    private LineRenderer[] _lineY;
+    private List<LineRenderer> _lineX;
+    private List<LineRenderer> _lineY;
+    private Stack<LineRenderer> _linePool = new Stack<LineRenderer>();
     private Vector3 _lastPosition;
 
     [SerializeField]
@@ -34,7 +36,6 @@ public class Graph : MonoBehaviour
 
     private void Update()
     {
-
         if (Camera.main.transform.position.x > _lastPosition.x)
         {
             Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
@@ -57,6 +58,19 @@ public class Graph : MonoBehaviour
             OnCameraMoveDown(max);
         }
 
+        if (Camera.main.transform.position.z < _lastPosition.z)
+        {
+            Vector3 max = CameraHelper.GetMaxViewFromCameraTo(Camera.main, transform);
+            Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
+            OnCameraZoomOut(max, min);
+        }
+        else if (Camera.main.transform.position.z > _lastPosition.z)
+        {
+            Vector3 max = CameraHelper.GetMaxViewFromCameraTo(Camera.main, transform);
+            Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
+            OnCameraZoomIn(max, min);
+        }
+
         _lastPosition = Camera.main.transform.position;
     }
 
@@ -68,9 +82,101 @@ public class Graph : MonoBehaviour
         Gizmos.DrawCube(fieldOfView, fieldOfViewSize);
     }
 
+    private void OnCameraZoomOut(Vector3 max, Vector3 min)
+    {
+        LineRenderer largestLineX = GetLargestLineX(_lineX);
+        if (largestLineX.GetPosition(1).x < max.x)
+        {
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            _lineX.Add(newLine);
+            Vector3[] positions = GetLineTo(largestLineX, Vector3.right);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorX(newLine);
+        }
+
+        LineRenderer smallestLineX = GetSmallestLineX(_lineX);
+        if (smallestLineX.GetPosition(1).x < min.x)
+        {
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            _lineX.Add(newLine);
+            Vector3[] positions = GetLineTo(smallestLineX, Vector3.left);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorX(newLine);
+        }
+
+        LineRenderer largestLineY = GetLargestLineY(_lineY);
+        if (largestLineY.GetPosition(1).y < max.y)
+        {
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            _lineY.Add(newLine);
+            Vector3[] positions = GetLineTo(largestLineY, Vector3.up);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorX(newLine);
+        }
+
+        LineRenderer smallestLineY = GetSmallestLineY(_lineY);
+        if (smallestLineY.GetPosition(1).y < min.y)
+        {
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            _lineY.Add(newLine);
+            Vector3[] positions = GetLineTo(smallestLineY, Vector3.down);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorX(newLine);
+        }
+    }
+
+    private void OnCameraZoomIn(Vector3 max, Vector3 min)
+    {
+        LineRenderer largestLineX = GetLargestLineX(_lineX);
+        if (largestLineX.GetPosition(1).x > max.x)
+        {
+            _lineX.Remove(largestLineX);
+            largestLineX.gameObject.SetActive(false);
+            _linePool.Push(largestLineX);
+        }
+
+        LineRenderer smallestLineX = GetSmallestLineX(_lineX);
+        if (smallestLineX.GetPosition(1).x > min.x)
+        {
+            _lineX.Remove(smallestLineX);
+            smallestLineX.gameObject.SetActive(false);
+            _linePool.Push(smallestLineX);
+        }
+
+        LineRenderer largestLineY = GetLargestLineY(_lineY);
+        if (largestLineY.GetPosition(1).y > max.y)
+        {
+            _lineY.Remove(largestLineY);
+            largestLineY.gameObject.SetActive(false);
+            _linePool.Push(largestLineY);
+        }
+
+        LineRenderer smallestLineY = GetSmallestLineY(_lineY);
+        if (smallestLineY.GetPosition(1).y > min.y)
+        {
+            _lineY.Remove(smallestLineY);
+            smallestLineY.gameObject.SetActive(false);
+            _linePool.Push(smallestLineY);
+        }
+    }
+
+    private LineRenderer GetLineFromPool(LineRenderer prefab, Transform parent)
+    {
+        LineRenderer newLine = null;
+        if (_linePool.Count == 0)
+        {
+            newLine = Instantiate(prefab, parent);
+        }
+        else
+        {
+            newLine = _linePool.Pop();
+        }
+        return newLine;
+    }
+
     private void OnCameraMoveRight(Vector3 min)
     {
-        for (int i = 0; i < _lineX.Length; i++)
+        for (int i = 0; i < _lineX.Count; i++)
         {
             if (_lineX[i].GetPosition(1).x < min.x)
             {
@@ -85,7 +191,7 @@ public class Graph : MonoBehaviour
 
     private void OnCameraMoveUp(Vector3 min)
     {
-        for (int i = 0; i < _lineY.Length; i++)
+        for (int i = 0; i < _lineY.Count; i++)
         {
             if (_lineY[i].GetPosition(1).y < min.y)
             {
@@ -100,7 +206,7 @@ public class Graph : MonoBehaviour
 
     private void OnCameraMoveLeft(Vector3 max)
     {
-        for (int i = _lineX.Length - 1; i >= 0; i--)
+        for (int i = _lineX.Count - 1; i >= 0; i--)
         {
             if (_lineX[i].GetPosition(1).x > max.x)
             {
@@ -115,7 +221,7 @@ public class Graph : MonoBehaviour
 
     private void OnCameraMoveDown(Vector3 max)
     {
-        for (int i = _lineY.Length - 1; i >= 0; i--)
+        for (int i = _lineY.Count - 1; i >= 0; i--)
         {
             if (_lineY[i].GetPosition(1).y > max.y)
             {
@@ -148,11 +254,11 @@ public class Graph : MonoBehaviour
         }
     }
 
-    private LineRenderer GetLargestLineX(LineRenderer[] lines)
+    private LineRenderer GetLargestLineX(List<LineRenderer> lines)
     {
         float x = float.NegativeInfinity;
         int index = 0;
-        for (int i = lines.Length - 1; i >= 0; i--)
+        for (int i = lines.Count - 1; i >= 0; i--)
         {
             if (x < lines[i].GetPosition(1).x)
             {
@@ -163,11 +269,11 @@ public class Graph : MonoBehaviour
         return lines[index];
     }
 
-    private LineRenderer GetLargestLineY(LineRenderer[] lines)
+    private LineRenderer GetLargestLineY(List<LineRenderer> lines)
     {
         float y = float.NegativeInfinity;
         int index = 0;
-        for (int i = lines.Length - 1; i >= 0; i--)
+        for (int i = lines.Count - 1; i >= 0; i--)
         {
             if (y < lines[i].GetPosition(1).y)
             {
@@ -178,11 +284,11 @@ public class Graph : MonoBehaviour
         return lines[index];
     }
 
-    private LineRenderer GetSmallestLineX(LineRenderer[] lines)
+    private LineRenderer GetSmallestLineX(List<LineRenderer> lines)
     {
         float x = float.PositiveInfinity;
         int index = 0;
-        for (int i = 0; i < lines.Length; i++)
+        for (int i = 0; i < lines.Count; i++)
         {
             if (x > lines[i].GetPosition(1).x)
             {
@@ -193,11 +299,11 @@ public class Graph : MonoBehaviour
         return lines[index];
     }
 
-    private LineRenderer GetSmallestLineY(LineRenderer[] lines)
+    private LineRenderer GetSmallestLineY(List<LineRenderer> lines)
     {
         float y = float.PositiveInfinity;
         int index = 0;
-        for (int i = 0; i < lines.Length; i++)
+        for (int i = 0; i < lines.Count; i++)
         {
             if (y > lines[i].GetPosition(1).y)
             {
@@ -210,11 +316,11 @@ public class Graph : MonoBehaviour
 
     private void CreateLinesY()
     {
-        _lineY = new LineRenderer[_line.y * 2];
+        _lineY = new List<LineRenderer>();
         int y = -_line.y;
         for (int i = 0; i < _line.y * 2; i++)
         {
-            _lineY[i] = Instantiate(_linePrefab, transform);
+            _lineY.Add(Instantiate(_linePrefab, transform));
             SetLineY(_lineY[i], y);
 
             AutoSetLineColorY(_lineY[i]);
@@ -236,11 +342,11 @@ public class Graph : MonoBehaviour
     
     private void CreateLinesX()
     {
-        _lineX = new LineRenderer[_line.x * 2];
+        _lineX = new List<LineRenderer>();
         int x = -_line.x;
         for (int i = 0; i < _line.x * 2; i++)
         {
-            _lineX[i] = Instantiate(_linePrefab, transform);
+            _lineX.Add(Instantiate(_linePrefab, transform));
             SetLineX(_lineX[i], x);
             AutoSetLineColorX(_lineX[i]);
             x++;
