@@ -104,25 +104,25 @@ public class Graph : MonoBehaviour
             AutoSetLineColorX(newLine);
         }
 
-        LineRenderer largestLineY = GetLargestLineY(_lineY);
-        if (largestLineY.GetPosition(1).y < max.y)
-        {
-            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
-            _lineY.Add(newLine);
-            Vector3[] positions = GetLineTo(largestLineY, Vector3.up);
-            SetLineToPosition(newLine, positions);
-            AutoSetLineColorX(newLine);
-        }
+        // LineRenderer largestLineY = GetLargestLineY(_lineY);
+        // if (largestLineY.GetPosition(1).y < max.y)
+        // {
+        //     LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+        //     _lineY.Add(newLine);
+        //     Vector3[] positions = GetLineTo(largestLineY, Vector3.up);
+        //     SetLineToPosition(newLine, positions);
+        //     AutoSetLineColorX(newLine);
+        // }
 
-        LineRenderer smallestLineY = GetSmallestLineY(_lineY);
-        if (smallestLineY.GetPosition(1).y < min.y)
-        {
-            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
-            _lineY.Add(newLine);
-            Vector3[] positions = GetLineTo(smallestLineY, Vector3.down);
-            SetLineToPosition(newLine, positions);
-            AutoSetLineColorX(newLine);
-        }
+        // LineRenderer smallestLineY = GetSmallestLineY(_lineY);
+        // if (smallestLineY.GetPosition(1).y < min.y)
+        // {
+        //     LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+        //     _lineY.Add(newLine);
+        //     Vector3[] positions = GetLineTo(smallestLineY, Vector3.down);
+        //     SetLineToPosition(newLine, positions);
+        //     AutoSetLineColorX(newLine);
+        // }
     }
 
     private void OnCameraZoomIn(Vector3 max, Vector3 min)
