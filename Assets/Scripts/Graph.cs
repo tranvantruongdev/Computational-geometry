@@ -38,24 +38,24 @@ public class Graph : MonoBehaviour
     {
         if (Camera.main.transform.position.x > _lastPosition.x)
         {
-            Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
-            OnCameraMoveRight(min);
+            Vector3 max = CameraHelper.GetMaxViewFromCameraTo(Camera.main, transform);
+            OnCameraMoveRight(max);
         }
         else if (Camera.main.transform.position.x < _lastPosition.x)
         {
-            Vector3 max = CameraHelper.GetMaxViewFromCameraTo(Camera.main, transform);
-            OnCameraMoveLeft(max);
+            Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
+            OnCameraMoveLeft(min);
         }
 
         if (Camera.main.transform.position.y > _lastPosition.y)
         {
-            Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
-            OnCameraMoveUp(min);
+            Vector3 max = CameraHelper.GetMaxViewFromCameraTo(Camera.main, transform);
+            OnCameraMoveUp(max);
         }
         else if (Camera.main.transform.position.y < _lastPosition.y)
         {
-            Vector3 max = CameraHelper.GetMaxViewFromCameraTo(Camera.main, transform);
-            OnCameraMoveDown(max);
+            Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
+            OnCameraMoveDown(min);
         }
 
         if (Camera.main.transform.position.z < _lastPosition.z)
@@ -85,50 +85,50 @@ public class Graph : MonoBehaviour
     private void OnCameraZoomOut(Vector3 max, Vector3 min)
     {
         LineRenderer largestLineX = GetLargestLineX(_lineX);
-        if (largestLineX.GetPosition(1).x < max.x)
+        if (largestLineX.GetPosition(1).x <= max.x)
         {
             LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
             _lineX.Add(newLine);
-            Vector3[] positions = GetLineTo(largestLineX, Vector3.right);
+            Vector3[] positions = AddLinePosition(largestLineX, Vector3.right);
             SetLineToPosition(newLine, positions);
             AutoSetLineColorX(newLine);
         }
 
         LineRenderer smallestLineX = GetSmallestLineX(_lineX);
-        if (smallestLineX.GetPosition(1).x < min.x)
+        if (smallestLineX.GetPosition(1).x >= min.x)
         {
             LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
             _lineX.Add(newLine);
-            Vector3[] positions = GetLineTo(smallestLineX, Vector3.left);
+            Vector3[] positions = AddLinePosition(smallestLineX, Vector3.left);
             SetLineToPosition(newLine, positions);
             AutoSetLineColorX(newLine);
         }
 
-        // LineRenderer largestLineY = GetLargestLineY(_lineY);
-        // if (largestLineY.GetPosition(1).y < max.y)
-        // {
-        //     LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
-        //     _lineY.Add(newLine);
-        //     Vector3[] positions = GetLineTo(largestLineY, Vector3.up);
-        //     SetLineToPosition(newLine, positions);
-        //     AutoSetLineColorX(newLine);
-        // }
+        LineRenderer largestLineY = GetLargestLineY(_lineY);
+        if (largestLineY.GetPosition(1).y <= max.y)
+        {
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            _lineY.Add(newLine);
+            Vector3[] positions = AddLinePosition(largestLineY, Vector3.up);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorX(newLine);
+        }
 
-        // LineRenderer smallestLineY = GetSmallestLineY(_lineY);
-        // if (smallestLineY.GetPosition(1).y < min.y)
-        // {
-        //     LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
-        //     _lineY.Add(newLine);
-        //     Vector3[] positions = GetLineTo(smallestLineY, Vector3.down);
-        //     SetLineToPosition(newLine, positions);
-        //     AutoSetLineColorX(newLine);
-        // }
+        LineRenderer smallestLineY = GetSmallestLineY(_lineY);
+        if (smallestLineY.GetPosition(1).y >= min.y)
+        {
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            _lineY.Add(newLine);
+            Vector3[] positions = AddLinePosition(smallestLineY, Vector3.down);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorX(newLine);
+        }
     }
 
     private void OnCameraZoomIn(Vector3 max, Vector3 min)
     {
         LineRenderer largestLineX = GetLargestLineX(_lineX);
-        if (largestLineX.GetPosition(1).x > max.x)
+        if (largestLineX.GetPosition(1).x >= max.x)
         {
             _lineX.Remove(largestLineX);
             largestLineX.gameObject.SetActive(false);
@@ -136,7 +136,7 @@ public class Graph : MonoBehaviour
         }
 
         LineRenderer smallestLineX = GetSmallestLineX(_lineX);
-        if (smallestLineX.GetPosition(1).x > min.x)
+        if (smallestLineX.GetPosition(1).x <= min.x)
         {
             _lineX.Remove(smallestLineX);
             smallestLineX.gameObject.SetActive(false);
@@ -144,7 +144,7 @@ public class Graph : MonoBehaviour
         }
 
         LineRenderer largestLineY = GetLargestLineY(_lineY);
-        if (largestLineY.GetPosition(1).y > max.y)
+        if (largestLineY.GetPosition(1).y >= max.y)
         {
             _lineY.Remove(largestLineY);
             largestLineY.gameObject.SetActive(false);
@@ -152,7 +152,7 @@ public class Graph : MonoBehaviour
         }
 
         LineRenderer smallestLineY = GetSmallestLineY(_lineY);
-        if (smallestLineY.GetPosition(1).y > min.y)
+        if (smallestLineY.GetPosition(1).y <= min.y)
         {
             _lineY.Remove(smallestLineY);
             smallestLineY.gameObject.SetActive(false);
@@ -170,71 +170,64 @@ public class Graph : MonoBehaviour
         else
         {
             newLine = _linePool.Pop();
+            newLine.gameObject.SetActive(true);
         }
         return newLine;
     }
 
-    private void OnCameraMoveRight(Vector3 min)
+    private void OnCameraMoveRight(Vector3 max)
     {
-        for (int i = 0; i < _lineX.Count; i++)
+        LineRenderer largestLine = GetLargestLineX(_lineX);
+        if(largestLine.GetPosition(0).x <= max.x)
         {
-            if (_lineX[i].GetPosition(1).x < min.x)
-            {
-                LineRenderer largestLine = GetLargestLineX(_lineX);
-
-                Vector3[] positions = GetLineTo(largestLine, Vector3.right);
-                SetLineToPosition(_lineX[i], positions);
-                AutoSetLineColorX(_lineX[i]);
-            }
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            Vector3[] positions = AddLinePosition(largestLine, Vector3.right);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorX(newLine);
+            _lineX.Add(newLine);
         }
     }
 
-    private void OnCameraMoveUp(Vector3 min)
+    private void OnCameraMoveLeft(Vector3 min)
     {
-        for (int i = 0; i < _lineY.Count; i++)
+        LineRenderer smallestLine = GetSmallestLineX(_lineX);
+        if (smallestLine.GetPosition(0).x >= min.x)
         {
-            if (_lineY[i].GetPosition(1).y < min.y)
-            {
-                LineRenderer largestLine = GetLargestLineY(_lineY);
-
-                Vector3[] positions = GetLineTo(largestLine, Vector3.up);
-                SetLineToPosition(_lineY[i], positions);
-                AutoSetLineColorY(_lineY[i]);
-            }
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            Vector3[] positions = AddLinePosition(smallestLine, Vector3.left);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorX(newLine);
+            _lineX.Add(newLine);
         }
     }
 
-    private void OnCameraMoveLeft(Vector3 max)
+    private void OnCameraMoveUp(Vector3 max)
     {
-        for (int i = _lineX.Count - 1; i >= 0; i--)
+        LineRenderer largestLine = GetLargestLineY(_lineY);
+        if (largestLine.GetPosition(0).y <= max.y)
         {
-            if (_lineX[i].GetPosition(1).x > max.x)
-            {
-                LineRenderer smallestLine = GetSmallestLineX(_lineX);
-
-                Vector3[] positions = GetLineTo(smallestLine, Vector3.left);
-                SetLineToPosition(_lineX[i], positions);
-                AutoSetLineColorX(_lineX[i]);
-            }
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            Vector3[] positions = AddLinePosition(largestLine, Vector3.up);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorY(newLine);
+            _lineY.Add(newLine);
         }
     }
 
-    private void OnCameraMoveDown(Vector3 max)
+    private void OnCameraMoveDown(Vector3 min)
     {
-        for (int i = _lineY.Count - 1; i >= 0; i--)
+        LineRenderer smallestLine = GetSmallestLineY(_lineY);
+        if (smallestLine.GetPosition(0).y >= min.y)
         {
-            if (_lineY[i].GetPosition(1).y > max.y)
-            {
-                LineRenderer smallestLine = GetSmallestLineY(_lineY);
-
-                Vector3[] positions = GetLineTo(smallestLine, Vector3.down);
-                SetLineToPosition(_lineY[i], positions);
-                AutoSetLineColorY(_lineY[i]);
-            }
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            Vector3[] positions = AddLinePosition(smallestLine, Vector3.down);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorY(newLine);
+            _lineY.Add(newLine);
         }
     }
 
-    private Vector3[] GetLineTo(LineRenderer line, Vector3 add)
+    private Vector3[] AddLinePosition(LineRenderer line, Vector3 add)
     {
         Vector3[] positions = new Vector3[2];
 

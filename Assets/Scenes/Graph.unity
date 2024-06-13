@@ -167,7 +167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a796902429ffd248937756ade6be1de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _linePrefab: {fileID: 412210673177855551, guid: c7ac7c0005220174e955e733d76f7ca3,
+  _linePrefab: {fileID: 412210673177855551, guid: edb5c87edd8ee544085ced8cf58a8313,
     type: 3}
   _line: {x: 12, y: 10}
   _max: {x: 100, y: 100}
