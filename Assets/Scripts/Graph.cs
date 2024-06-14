@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-
 using UnityEngine;
 
 public class Graph : MonoBehaviour
@@ -7,6 +6,7 @@ public class Graph : MonoBehaviour
     private readonly List<LineRenderer> _lineX = new();
     private readonly List<LineRenderer> _lineY = new();
     private readonly Stack<LineRenderer> _linePool = new();
+    
     private Vector3 _lastPosition;
 
     [SerializeField]
@@ -14,11 +14,11 @@ public class Graph : MonoBehaviour
     [Space]
     [Header("__SETTINGS__")]
     [SerializeField]
-    private Vector2Int _line = new(7, 7);
+    private Vector2Int _line = new Vector2Int(7, 7);
     [SerializeField]
-    private Vector2 _max = new(100f, 100f);
+    private Vector2 _max = new Vector2(100f, 100f);
     [SerializeField]
-    private Vector2 _min = new(-100f, -100f);
+    private Vector2 _min = new Vector2(-100f, -100f);
     [Space]
     [Header("__COLOR__")]
     [SerializeField]
@@ -28,87 +28,296 @@ public class Graph : MonoBehaviour
     [SerializeField]
     private Color _lineColor;
 
-    private Camera _mainCamera;
-
     private void Start()
     {
-        _mainCamera = Camera.main;
-        if (_mainCamera == null)
-        {
-            Debug.LogError("Main camera not found. Please tag your main camera as 'MainCamera'.");
-            return;
-        }
-
-        CreateLines(_lineX, SetLineX, AutoSetLineColorX);
-        CreateLines(_lineY, SetLineY, AutoSetLineColorY);
-        _lastPosition = _mainCamera.transform.position;
+        CreateLinesX();
+        CreateLinesY();
+        _lastPosition = Camera.main.transform.position;
     }
 
     private void Update()
     {
-        if (_mainCamera == null)
+        if (Camera.main.transform.position.x > _lastPosition.x)
         {
-            return;
+            Vector3 max = CameraHelper.GetMaxViewFromCameraTo(Camera.main, transform);
+            OnCameraMoveRight(max);
+        }
+        else if (Camera.main.transform.position.x < _lastPosition.x)
+        {
+            Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
+            OnCameraMoveLeft(min);
         }
 
-        Vector3 cameraPosition = _mainCamera.transform.position;
-
-        if (cameraPosition != _lastPosition)
+        if (Camera.main.transform.position.y > _lastPosition.y)
         {
-            Vector3 maxView = CameraHelper.GetMaxViewFromCameraTo(_mainCamera, transform);
-            Vector3 minView = CameraHelper.GetMinViewFromCameraTo(_mainCamera, transform);
+            Vector3 max = CameraHelper.GetMaxViewFromCameraTo(Camera.main, transform);
+            OnCameraMoveUp(max);
+        }
+        else if (Camera.main.transform.position.y < _lastPosition.y)
+        {
+            Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
+            OnCameraMoveDown(min);
+        }
 
-            if (cameraPosition.x != _lastPosition.x)
-            {
-                if (cameraPosition.x > _lastPosition.x)
-                {
-                    OnCameraMoveRight(maxView);
-                }
-                else
-                {
-                    OnCameraMoveLeft(minView);
-                }
-            }
+        if (Camera.main.transform.position.z < _lastPosition.z)
+        {
+            Vector3 max = CameraHelper.GetMaxViewFromCameraTo(Camera.main, transform);
+            Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
+            OnCameraZoomOut(max, min);
+        }
+        else if (Camera.main.transform.position.z > _lastPosition.z)
+        {
+            Vector3 max = CameraHelper.GetMaxViewFromCameraTo(Camera.main, transform);
+            Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
+            OnCameraZoomIn(max, min);
+        }
 
-            if (cameraPosition.y != _lastPosition.y)
-            {
-                if (cameraPosition.y > _lastPosition.y)
-                {
-                    OnCameraMoveUp(maxView);
-                }
-                else
-                {
-                    OnCameraMoveDown(minView);
-                }
-            }
+        _lastPosition = Camera.main.transform.position;
+    }
 
-            if (cameraPosition.z != _lastPosition.z)
-            {
-                if (cameraPosition.z < _lastPosition.z)
-                {
-                    OnCameraMoveForward(maxView, minView);
-                }
-                else
-                {
-                    OnCameraMoveBack(minView, maxView);
-                }
-            }
+    private void OnDrawGizmos()
+    {
+        Vector3 fieldOfViewSize = CameraHelper.GetFieldOfViewSizeFromCameraTo(Camera.main, transform, out Vector3 fieldOfView);
 
-            _lastPosition = cameraPosition;
+        Gizmos.color = Color.green;
+        Gizmos.DrawCube(fieldOfView, fieldOfViewSize);
+    }
+
+    private void OnCameraZoomOut(Vector3 max, Vector3 min)
+    {
+        LineRenderer largestLineX = GetLargestLineX(_lineX);
+        if (largestLineX.GetPosition(1).x <= max.x)
+        {
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            _lineX.Add(newLine);
+            Vector3[] positions = AddLinePosition(largestLineX, Vector3.right);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorX(newLine);
+        }
+
+        LineRenderer smallestLineX = GetSmallestLineX(_lineX);
+        if (smallestLineX.GetPosition(1).x >= min.x)
+        {
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            _lineX.Add(newLine);
+            Vector3[] positions = AddLinePosition(smallestLineX, Vector3.left);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorX(newLine);
+        }
+
+        LineRenderer largestLineY = GetLargestLineY(_lineY);
+        if (largestLineY.GetPosition(1).y <= max.y)
+        {
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            _lineY.Add(newLine);
+            Vector3[] positions = AddLinePosition(largestLineY, Vector3.up);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorX(newLine);
+        }
+
+        LineRenderer smallestLineY = GetSmallestLineY(_lineY);
+        if (smallestLineY.GetPosition(1).y >= min.y)
+        {
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            _lineY.Add(newLine);
+            Vector3[] positions = AddLinePosition(smallestLineY, Vector3.down);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorX(newLine);
         }
     }
 
-    private void CreateLines(List<LineRenderer> lines, System.Action<LineRenderer, int> setLinePosition, System.Action<LineRenderer> setLineColor)
+    private void OnCameraZoomIn(Vector3 max, Vector3 min)
     {
-        int count = _line.x * 2;
-        int startIndex = -_line.x;
-
-        for (int i = 0; i < count; i++)
+        LineRenderer largestLineX = GetLargestLineX(_lineX);
+        if (largestLineX.GetPosition(1).x >= max.x)
         {
-            LineRenderer line = Instantiate(_linePrefab, transform);
-            setLinePosition(line, startIndex + i);
-            setLineColor(line);
-            lines.Add(line);
+            _lineX.Remove(largestLineX);
+            largestLineX.gameObject.SetActive(false);
+            _linePool.Push(largestLineX);
+        }
+
+        LineRenderer smallestLineX = GetSmallestLineX(_lineX);
+        if (smallestLineX.GetPosition(1).x <= min.x)
+        {
+            _lineX.Remove(smallestLineX);
+            smallestLineX.gameObject.SetActive(false);
+            _linePool.Push(smallestLineX);
+        }
+
+        LineRenderer largestLineY = GetLargestLineY(_lineY);
+        if (largestLineY.GetPosition(1).y >= max.y)
+        {
+            _lineY.Remove(largestLineY);
+            largestLineY.gameObject.SetActive(false);
+            _linePool.Push(largestLineY);
+        }
+
+        LineRenderer smallestLineY = GetSmallestLineY(_lineY);
+        if (smallestLineY.GetPosition(1).y <= min.y)
+        {
+            _lineY.Remove(smallestLineY);
+            smallestLineY.gameObject.SetActive(false);
+            _linePool.Push(smallestLineY);
+        }
+    }
+
+    private LineRenderer GetLineFromPool(LineRenderer prefab, Transform parent)
+    {
+        LineRenderer newLine = null;
+        if (_linePool.Count == 0)
+        {
+            newLine = Instantiate(prefab, parent);
+        }
+        else
+        {
+            newLine = _linePool.Pop();
+            newLine.gameObject.SetActive(true);
+        }
+        return newLine;
+    }
+
+    private void OnCameraMoveRight(Vector3 max)
+    {
+        LineRenderer largestLine = GetLargestLineX(_lineX);
+        if (largestLine.GetPosition(0).x <= max.x)
+        {
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            Vector3[] positions = AddLinePosition(largestLine, Vector3.right);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorX(newLine);
+            _lineX.Add(newLine);
+        }
+    }
+
+    private void OnCameraMoveLeft(Vector3 min)
+    {
+        LineRenderer smallestLine = GetSmallestLineX(_lineX);
+        if (smallestLine.GetPosition(0).x >= min.x)
+        {
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            Vector3[] positions = AddLinePosition(smallestLine, Vector3.left);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorX(newLine);
+            _lineX.Add(newLine);
+        }
+    }
+
+    private void OnCameraMoveUp(Vector3 max)
+    {
+        LineRenderer largestLine = GetLargestLineY(_lineY);
+        if (largestLine.GetPosition(0).y <= max.y)
+        {
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            Vector3[] positions = AddLinePosition(largestLine, Vector3.up);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorY(newLine);
+            _lineY.Add(newLine);
+        }
+    }
+
+    private void OnCameraMoveDown(Vector3 min)
+    {
+        LineRenderer smallestLine = GetSmallestLineY(_lineY);
+        if (smallestLine.GetPosition(0).y >= min.y)
+        {
+            LineRenderer newLine = GetLineFromPool(_linePrefab, transform);
+            Vector3[] positions = AddLinePosition(smallestLine, Vector3.down);
+            SetLineToPosition(newLine, positions);
+            AutoSetLineColorY(newLine);
+            _lineY.Add(newLine);
+        }
+    }
+
+    private Vector3[] AddLinePosition(LineRenderer line, Vector3 add)
+    {
+        Vector3[] positions = new Vector3[2];
+
+        positions[0] = line.GetPosition(0);
+        positions[0] += add;
+
+        positions[1] = line.GetPosition(1);
+        positions[1] += add;
+        return positions;
+    }
+
+    private void SetLineToPosition(LineRenderer line, Vector3[] linePositions)
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            line.SetPosition(i, linePositions[i]);
+        }
+    }
+
+    private LineRenderer GetLargestLineX(List<LineRenderer> lines)
+    {
+        float x = float.NegativeInfinity;
+        int index = 0;
+        for (int i = lines.Count - 1; i >= 0; i--)
+        {
+            if (x < lines[i].GetPosition(1).x)
+            {
+                x = lines[i].GetPosition(1).x;
+                index = i;
+            }
+        }
+        return lines[index];
+    }
+
+    private LineRenderer GetLargestLineY(List<LineRenderer> lines)
+    {
+        float y = float.NegativeInfinity;
+        int index = 0;
+        for (int i = lines.Count - 1; i >= 0; i--)
+        {
+            if (y < lines[i].GetPosition(1).y)
+            {
+                y = lines[i].GetPosition(1).y;
+                index = i;
+            }
+        }
+        return lines[index];
+    }
+
+    private LineRenderer GetSmallestLineX(List<LineRenderer> lines)
+    {
+        float x = float.PositiveInfinity;
+        int index = 0;
+        for (int i = 0; i < lines.Count; i++)
+        {
+            if (x > lines[i].GetPosition(1).x)
+            {
+                x = lines[i].GetPosition(1).x;
+                index = i;
+            }
+        }
+        return lines[index];
+    }
+
+    private LineRenderer GetSmallestLineY(List<LineRenderer> lines)
+    {
+        float y = float.PositiveInfinity;
+        int index = 0;
+        for (int i = 0; i < lines.Count; i++)
+        {
+            if (y > lines[i].GetPosition(1).y)
+            {
+                y = lines[i].GetPosition(1).y;
+                index = i;
+            }
+        }
+        return lines[index];
+    }
+
+    private void CreateLinesY()
+    {
+        int y = -_line.y;
+        for (int i = 0; i < _line.y * 2; i++)
+        {
+            _lineY.Add(Instantiate(_linePrefab, transform));
+            SetLineY(_lineY[i], y);
+
+            AutoSetLineColorY(_lineY[i]);
+            y++;
         }
     }
 
@@ -121,6 +330,18 @@ public class Graph : MonoBehaviour
         else
         {
             SetLineColors(line, _xColor, _xColor);
+        }
+    }
+
+    private void CreateLinesX()
+    {
+        int x = -_line.x;
+        for (int i = 0; i < _line.x * 2; i++)
+        {
+            _lineX.Add(Instantiate(_linePrefab, transform));
+            SetLineX(_lineX[i], x);
+            AutoSetLineColorX(_lineX[i]);
+            x++;
         }
     }
 
@@ -152,65 +373,5 @@ public class Graph : MonoBehaviour
     {
         lineRenderer.startColor = c1;
         lineRenderer.endColor = c2;
-    }
-
-    private void OnCameraMoveRight(Vector3 max)
-    {
-        foreach (LineRenderer line in _lineY)
-        {
-            if (line.GetPosition(1).x < max.x)
-            {
-                float newX = line.GetPosition(1).x + (_line.x * 2);
-                SetLineY(line, Mathf.RoundToInt(newX));
-            }
-        }
-    }
-
-    private void OnCameraMoveLeft(Vector3 min)
-    {
-        foreach (LineRenderer line in _lineY)
-        {
-            if (line.GetPosition(0).x > min.x)
-            {
-                float newX = line.GetPosition(0).x - (_line.x * 2);
-                SetLineY(line, Mathf.RoundToInt(newX));
-            }
-        }
-    }
-
-    private void OnCameraMoveUp(Vector3 max)
-    {
-        foreach (LineRenderer line in _lineX)
-        {
-            if (line.GetPosition(1).y < max.y)
-            {
-                float newY = line.GetPosition(1).y + (_line.y * 2);
-                SetLineX(line, Mathf.RoundToInt(newY));
-            }
-        }
-    }
-
-    private void OnCameraMoveDown(Vector3 min)
-    {
-        foreach (LineRenderer line in _lineX)
-        {
-            if (line.GetPosition(0).y > min.y)
-            {
-                float newY = line.GetPosition(0).y - (_line.y * 2);
-                SetLineX(line, Mathf.RoundToInt(newY));
-            }
-        }
-    }
-
-    private void OnCameraMoveForward(Vector3 max, Vector3 min)
-    {
-        OnCameraMoveRight(max);
-        OnCameraMoveLeft(min);
-    }
-
-    private void OnCameraMoveBack(Vector3 min, Vector3 max)
-    {
-        OnCameraMoveRight(max);
-        OnCameraMoveLeft(min);
     }
 }
