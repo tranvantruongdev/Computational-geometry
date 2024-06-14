@@ -133,6 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 208987094}
   - component: {fileID: 208987095}
+  - component: {fileID: 208987096}
   m_Layer: 0
   m_Name: Graph
   m_TagString: Untagged
@@ -162,7 +163,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 208987093}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4a796902429ffd248937756ade6be1de, type: 3}
   m_Name: 
@@ -175,6 +176,24 @@ MonoBehaviour:
   _yColor: {r: 0, g: 1, b: 0, a: 1}
   _xColor: {r: 1, g: 0, b: 0, a: 1}
   _lineColor: {r: 0.38679248, g: 0.38679248, b: 0.38679248, a: 1}
+--- !u!114 &208987096
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 208987093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d57f86ad407fed44c8d322cbfd262a38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _spritePrefab: {fileID: 7396739620606495009, guid: 9154b33e938b6264f87b4919ac78f74f,
+    type: 3}
+  _line: {x: 15, y: 7}
+  _yColor: {r: 0, g: 1, b: 0, a: 1}
+  _xColor: {r: 1, g: 0, b: 0, a: 1}
+  _lineColor: {r: 0.3882353, g: 0.3882353, b: 0.3882353, a: 1}
 --- !u!1 &1475736588
 GameObject:
   m_ObjectHideFlags: 0
@@ -261,7 +280,7 @@ Transform:
   m_GameObject: {fileID: 1475736588}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.23, y: 0, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -3,21 +3,19 @@ using UnityEngine;
 
 public class SpriteRendererGraph : MonoBehaviour
 {
-    private List<SpriteRenderer> _lineX;
-    private List<SpriteRenderer> _lineY;
-    private Stack<SpriteRenderer> _linePool = new Stack<SpriteRenderer>();
+    private readonly List<SpriteRenderer> _lineX = new();
+    private readonly List<SpriteRenderer> _lineY = new();
+    private readonly Stack<SpriteRenderer> _linePool = new Stack<SpriteRenderer>();
+    
+    private Camera _mainCamera;
     private Vector3 _lastPosition;
 
     [SerializeField]
-    private GameObject _prefab;
+    private SpriteRenderer _spritePrefab;
     [Space]
     [Header("__SETTINGS__")]
-    [SerializeField]
+    [SerializeField]    
     private Vector2Int _line = new Vector2Int(7, 7);
-    [SerializeField]
-    private Vector2 _max = new Vector2(100f, 100f);
-    [SerializeField]
-    private Vector2 _min = new Vector2(-100f, -100f);
     [Space]
     [Header("__COLOR__")]
     [SerializeField]
@@ -29,13 +27,45 @@ public class SpriteRendererGraph : MonoBehaviour
 
     private void Start()
     {
-        _lastPosition = Camera.main.transform.position;
+        _mainCamera = Camera.main;
+        _lastPosition = _mainCamera.transform.position;
+        CreateLines(_line);
     }
 
     private void Update()
     {
-
+        if (_mainCamera.transform.position.x > _lastPosition.x)
+        {
+            Vector3 max = CameraHelper.GetMaxViewFromCameraTo(_mainCamera, transform);
+        }
         _lastPosition = Camera.main.transform.position;
+    }
+
+    private void CreateLines(Vector2 expand)
+    {
+        for (int x = (int)(-expand.x / 2); x < expand.x / 2; x++)
+        {
+            SpriteRenderer sprite = GetLineInPool();
+            sprite.transform.up = Vector3.right;
+            sprite.transform.position = new Vector3(x, 0);
+            _lineX.Add(sprite);
+        }
+
+        for (int y = (int)(-expand.y / 2); y < expand.y / 2; y++)
+        {
+            SpriteRenderer sprite = GetLineInPool();
+            sprite.transform.position = new Vector3(0, y);
+            _lineY.Add(sprite);
+        }
+    }
+
+    private SpriteRenderer GetLineInPool()
+    {
+        if (_linePool.Count > 0)
+        {
+            return _linePool.Pop();
+        }
+        return Instantiate(_spritePrefab, transform);
     }
 
     private void OnDrawGizmos()
