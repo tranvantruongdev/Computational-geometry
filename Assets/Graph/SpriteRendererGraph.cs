@@ -25,6 +25,7 @@ public class SpriteRendererGraph : MonoBehaviour
     [SerializeField]
     private Color _lineColor;
 
+    #region UNITY
     private void Start()
     {
         _mainCamera = Camera.main;
@@ -37,35 +38,25 @@ public class SpriteRendererGraph : MonoBehaviour
         if (_mainCamera.transform.position.x > _lastPosition.x)
         {
             Vector3 max = CameraHelper.GetMaxViewFromCameraTo(_mainCamera, transform);
+            OnCameraMoveRight(max);
         }
-        _lastPosition = Camera.main.transform.position;
-    }
-
-    private void CreateLines(Vector2 expand)
-    {
-        for (int x = (int)(-expand.x / 2); x < expand.x / 2; x++)
+        else if (_mainCamera.transform.position.x < _lastPosition.x)
         {
-            SpriteRenderer sprite = GetLineInPool();
-            sprite.transform.up = Vector3.right;
-            sprite.transform.position = new Vector3(x, 0);
-            _lineX.Add(sprite);
+            Vector3 min = CameraHelper.GetMinViewFromCameraTo(_mainCamera, transform);
+            OnCameraMoveLeft(min);
         }
 
-        for (int y = (int)(-expand.y / 2); y < expand.y / 2; y++)
+        if (Camera.main.transform.position.y > _lastPosition.y)
         {
-            SpriteRenderer sprite = GetLineInPool();
-            sprite.transform.position = new Vector3(0, y);
-            _lineY.Add(sprite);
+            Vector3 max = CameraHelper.GetMaxViewFromCameraTo(Camera.main, transform);
+            OnCameraMoveUp(max);
         }
-    }
-
-    private SpriteRenderer GetLineInPool()
-    {
-        if (_linePool.Count > 0)
+        else if (Camera.main.transform.position.y < _lastPosition.y)
         {
-            return _linePool.Pop();
+            Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
+            OnCameraMoveDown(min);
         }
-        return Instantiate(_spritePrefab, transform);
+        _lastPosition = _mainCamera.transform.position;
     }
 
     private void OnDrawGizmos()
@@ -74,5 +65,171 @@ public class SpriteRendererGraph : MonoBehaviour
 
         Gizmos.color = Color.green;
         Gizmos.DrawCube(fieldOfView, fieldOfViewSize);
+    }
+    #endregion
+
+    private void CreateLines(Vector2 expand)
+    {
+        for (int x = (int)(-expand.x / 2); x < expand.x / 2; x++)
+        {
+            SpriteRenderer sprite = GetLineX();
+            sprite.transform.position = new Vector3(x, 0);
+            AutoSetLineColorX(sprite);
+            _lineX.Add(sprite);
+        }
+
+        for (int y = (int)(-expand.y / 2); y < expand.y / 2; y++)
+        {
+            SpriteRenderer sprite = GetLineFromPool();
+            sprite.transform.position = new Vector3(0, y);
+            AutoSetLineColorY(sprite);
+            _lineY.Add(sprite);
+        }
+    }
+
+    private SpriteRenderer GetLineFromPool()
+    {
+        if (_linePool.Count > 0)
+        {
+            return _linePool.Pop();
+        }
+        return Instantiate(_spritePrefab, transform);
+    }
+
+    private void OnCameraMoveRight(Vector3 max)
+    {
+        SpriteRenderer largestLine = GetLargestLineX(_lineX);
+        if (largestLine.transform.position.x <= max.x)
+        {
+            SpriteRenderer newLine = GetLineX();
+            newLine.transform.position = largestLine.transform.position + Vector3.right;
+            AutoSetLineColorX(newLine);
+            _lineX.Add(newLine);
+        }
+    }
+
+    private void OnCameraMoveLeft(Vector3 min)
+    {
+        SpriteRenderer smallestLine = GetSmallestLineX(_lineX);
+        if (smallestLine.transform.position.x >= min.x)
+        {
+            SpriteRenderer newLine = GetLineX();
+            newLine.transform.position = smallestLine.transform.position + Vector3.left;
+            AutoSetLineColorX(newLine);
+            _lineX.Add(newLine);
+        }
+    }
+
+    private void OnCameraMoveUp(Vector3 max)
+    {
+        SpriteRenderer largestLine = GetLargestLineY(_lineY);
+        if (largestLine.transform.position.y <= max.y)
+        {
+            SpriteRenderer newLine = GetLineFromPool();
+            newLine.transform.position = largestLine.transform.position + Vector3.up;
+            AutoSetLineColorY(newLine);
+            _lineY.Add(newLine);
+        }
+    }
+
+    private void OnCameraMoveDown(Vector3 min)
+    {
+        SpriteRenderer smallestLine = GetSmallestLineY(_lineY);
+        if (smallestLine.transform.position.y >= min.y)
+        {
+            SpriteRenderer newLine = GetLineFromPool();
+            newLine.transform.position = smallestLine.transform.position + Vector3.down;
+            AutoSetLineColorY(newLine);
+            _lineY.Add(newLine);
+        }
+    }
+
+    private SpriteRenderer GetLineX()
+    {
+        SpriteRenderer newLine = GetLineFromPool();
+        newLine.transform.up = Vector3.right;
+        return newLine;
+    }
+
+    private void AutoSetLineColorX(SpriteRenderer line)
+    {
+        if (line.transform.position.x != 0)
+        {
+            line.color = _lineColor;
+            return;
+        }
+        line.color = _yColor;
+    }
+
+    private void AutoSetLineColorY(SpriteRenderer line)
+    {
+        if (line.transform.position.y != 0)
+        {
+            line.color = _lineColor;
+        }
+        else
+        {
+            line.color = _xColor;
+        }
+    }
+
+    private SpriteRenderer GetLargestLineX(List<SpriteRenderer> lines)
+    {
+        float x = float.NegativeInfinity;
+        int index = 0;
+        for (int i = lines.Count - 1; i >= 0; i--)
+        {
+            if (x < lines[i].transform.position.x)
+            {
+                x = lines[i].transform.position.x;
+                index = i;
+            }
+        }
+        return lines[index];
+    }
+
+    private SpriteRenderer GetLargestLineY(List<SpriteRenderer> lines)
+    {
+        float y = float.NegativeInfinity;
+        int index = 0;
+        for (int i = lines.Count - 1; i >= 0; i--)
+        {
+            if (y < lines[i].transform.position.y)
+            {
+                y = lines[i].transform.position.y;
+                index = i;
+            }
+        }
+        return lines[index];
+    }
+
+    private SpriteRenderer GetSmallestLineX(List<SpriteRenderer> lines)
+    {
+        float x = float.PositiveInfinity;
+        int index = 0;
+        for (int i = 0; i < lines.Count; i++)
+        {
+            if (x > lines[i].transform.position.x)
+            {
+                x = lines[i].transform.position.x;
+                index = i;
+            }
+        }
+        return lines[index];
+    }
+
+    private SpriteRenderer GetSmallestLineY(List<SpriteRenderer> lines)
+    {
+        float y = float.PositiveInfinity;
+        int index = 0;
+        for (int i = 0; i < lines.Count; i++)
+        {
+            if (y > lines[i].transform.position.y)
+            {
+                y = lines[i].transform.position.y;
+                index = i;
+            }
+        }
+        return lines[index];
     }
 }

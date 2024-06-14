@@ -190,7 +190,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _spritePrefab: {fileID: 7396739620606495009, guid: 9154b33e938b6264f87b4919ac78f74f,
     type: 3}
-  _line: {x: 15, y: 7}
+  _line: {x: 19, y: 15}
   _yColor: {r: 0, g: 1, b: 0, a: 1}
   _xColor: {r: 1, g: 0, b: 0, a: 1}
   _lineColor: {r: 0.3882353, g: 0.3882353, b: 0.3882353, a: 1}
