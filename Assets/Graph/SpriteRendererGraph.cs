@@ -5,7 +5,8 @@ public class SpriteRendererGraph : MonoBehaviour
 {
     private readonly List<SpriteRenderer> _lineX = new();
     private readonly List<SpriteRenderer> _lineY = new();
-    private readonly Stack<SpriteRenderer> _linePool = new Stack<SpriteRenderer>();
+    private readonly Stack<SpriteRenderer> _linePoolX = new();
+    private readonly Stack<SpriteRenderer> _linePoolY = new();
     
     private Camera _mainCamera;
     private Vector3 _lastPosition;
@@ -56,6 +57,20 @@ public class SpriteRendererGraph : MonoBehaviour
             Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
             OnCameraMoveDown(min);
         }
+
+        if (Camera.main.transform.position.z < _lastPosition.z)
+        {
+            Vector3 max = CameraHelper.GetMaxViewFromCameraTo(Camera.main, transform);
+            Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
+            OnCameraZoomOut(max, min);
+        }
+        else if (Camera.main.transform.position.z > _lastPosition.z)
+        {
+            Vector3 max = CameraHelper.GetMaxViewFromCameraTo(Camera.main, transform);
+            Vector3 min = CameraHelper.GetMinViewFromCameraTo(Camera.main, transform);
+            OnCameraZoomIn(max, min);
+        }
+
         _lastPosition = _mainCamera.transform.position;
     }
 
@@ -80,18 +95,20 @@ public class SpriteRendererGraph : MonoBehaviour
 
         for (int y = (int)(-expand.y / 2); y < expand.y / 2; y++)
         {
-            SpriteRenderer sprite = GetLineFromPool();
+            SpriteRenderer sprite = GetLineFromPool(_linePoolY);
             sprite.transform.position = new Vector3(0, y);
             AutoSetLineColorY(sprite);
             _lineY.Add(sprite);
         }
     }
 
-    private SpriteRenderer GetLineFromPool()
+    private SpriteRenderer GetLineFromPool(Stack<SpriteRenderer> pool)
     {
-        if (_linePool.Count > 0)
+        if (pool.Count > 0)
         {
-            return _linePool.Pop();
+            SpriteRenderer sprite = pool.Pop();
+            sprite.gameObject.SetActive(true);
+            return sprite;
         }
         return Instantiate(_spritePrefab, transform);
     }
@@ -125,7 +142,7 @@ public class SpriteRendererGraph : MonoBehaviour
         SpriteRenderer largestLine = GetLargestLineY(_lineY);
         if (largestLine.transform.position.y <= max.y)
         {
-            SpriteRenderer newLine = GetLineFromPool();
+            SpriteRenderer newLine = GetLineFromPool(_linePoolY);
             newLine.transform.position = largestLine.transform.position + Vector3.up;
             AutoSetLineColorY(newLine);
             _lineY.Add(newLine);
@@ -137,18 +154,106 @@ public class SpriteRendererGraph : MonoBehaviour
         SpriteRenderer smallestLine = GetSmallestLineY(_lineY);
         if (smallestLine.transform.position.y >= min.y)
         {
-            SpriteRenderer newLine = GetLineFromPool();
+            SpriteRenderer newLine = GetLineFromPool(_linePoolY);
             newLine.transform.position = smallestLine.transform.position + Vector3.down;
             AutoSetLineColorY(newLine);
             _lineY.Add(newLine);
         }
     }
 
+    private void OnCameraZoomOut(Vector3 max, Vector3 min)
+    {
+        SpriteRenderer largestLineX = GetLargestLineX(_lineX);
+        if (largestLineX.transform.position.x <= max.x)
+        {
+            SpriteRenderer newLine = GetLineX();
+            newLine.gameObject.SetActive(true);
+            newLine.transform.position = largestLineX.transform.position + Vector3.right;
+            AutoSetLineColorX(newLine);
+            _lineX.Add(newLine);
+        }
+
+        SpriteRenderer smallestLineX = GetSmallestLineX(_lineX);
+        if (smallestLineX.transform.position.x >= min.x)
+        {
+            SpriteRenderer newLine = GetLineX();
+            newLine.gameObject.SetActive(true);
+            newLine.transform.position = smallestLineX.transform.position + Vector3.left;
+            AutoSetLineColorX(newLine);
+            _lineX.Add(newLine);
+        }
+
+        SpriteRenderer largestLineY = GetLargestLineY(_lineY);
+        if (largestLineY.transform.position.y <= max.y)
+        {
+            SpriteRenderer newLine = GetLineFromPool(_linePoolY);
+            newLine.gameObject.SetActive(true);
+            newLine.transform.position = largestLineY.transform.position + Vector3.up;
+            AutoSetLineColorY(newLine);
+            _lineY.Add(newLine);
+        }
+
+        SpriteRenderer smallestLineY = GetSmallestLineY(_lineY);
+        if (smallestLineY.transform.position.y >= min.y)
+        {
+            SpriteRenderer newLine = GetLineFromPool(_linePoolY);
+            newLine.gameObject.SetActive(true);
+            newLine.transform.position = smallestLineY.transform.position + Vector3.down;
+            AutoSetLineColorY(newLine);
+            _lineY.Add(newLine);
+        }
+    }
+
+    private void OnCameraZoomIn(Vector3 max, Vector3 min)
+    {
+        SpriteRenderer largestLineX = GetLargestLineX(_lineX);
+        if (largestLineX.transform.position.x >= max.x)
+        {
+            PushLineXToPool(largestLineX);
+        }
+
+        SpriteRenderer smallestLineX = GetSmallestLineX(_lineX);
+        if (smallestLineX.transform.position.x <= min.x)
+        {
+            PushLineXToPool(smallestLineX);
+        }
+
+        SpriteRenderer largestLineY = GetLargestLineY(_lineY);
+        if (largestLineY.transform.position.y >= max.y)
+        {
+            PushLineYToPool(largestLineY);
+        }
+
+        SpriteRenderer smallestLineY = GetSmallestLineY(_lineY);
+        if (smallestLineY.transform.position.y <= min.y)
+        {
+            PushLineYToPool(smallestLineY);
+        }
+    }
+
+
     private SpriteRenderer GetLineX()
     {
-        SpriteRenderer newLine = GetLineFromPool();
+        SpriteRenderer newLine = GetLineFromPool(_linePoolX);
         newLine.transform.up = Vector3.right;
         return newLine;
+    }
+
+    private void PushLineXToPool(SpriteRenderer spriteRenderer)
+    {
+        PushLineToPool(spriteRenderer, _lineX, _linePoolX);
+    }
+
+    private void PushLineYToPool(SpriteRenderer spriteRenderer)
+    {
+        PushLineToPool(spriteRenderer, _lineY, _linePoolY);
+    }
+
+    private void PushLineToPool(SpriteRenderer spriteRenderer, List<SpriteRenderer> lineList, Stack<SpriteRenderer> pool)
+    {
+        lineList.Remove(spriteRenderer);
+        spriteRenderer.gameObject.SetActive(false);
+        pool.Push(spriteRenderer);
     }
 
     private void AutoSetLineColorX(SpriteRenderer line)
@@ -166,11 +271,9 @@ public class SpriteRendererGraph : MonoBehaviour
         if (line.transform.position.y != 0)
         {
             line.color = _lineColor;
+            return;
         }
-        else
-        {
-            line.color = _xColor;
-        }
+        line.color = _xColor;
     }
 
     private SpriteRenderer GetLargestLineX(List<SpriteRenderer> lines)
