@@ -50,7 +50,7 @@ public class QuadraticGraph : MonoBehaviour
 
             if (Mathf.Abs(y) > yLimit)
             {
-                break;
+                continue;  // Skip points where y exceeds the yLimit
             }
 
             positions[validPoints] = new Vector3(x, y, 0);
