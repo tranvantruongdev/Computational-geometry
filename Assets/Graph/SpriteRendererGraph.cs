@@ -19,6 +19,10 @@ public class SpriteRendererGraph : MonoBehaviour
     [Space]
     [SerializeField]
     private SpriteRenderer _spritePrefab;
+    [SerializeField]
+    private float _maxOpacity;
+    [SerializeField]
+    private float _minOpacity;
     [Space]
     [Header("__COLOR__")]
     [SerializeField]
@@ -29,9 +33,32 @@ public class SpriteRendererGraph : MonoBehaviour
     private Color _lineColor;
 
     #region UNITY
-    private void Start()
+    private void Awake()
     {
         _mainCamera = Camera.main;
+
+        if (_mainCamera.orthographic)
+        {
+            _minOpacity = _mainCamera.orthographicSize / lineThickness;
+        }
+        else
+        {
+            _minOpacity = Mathf.Abs(_mainCamera.transform.position.z / lineThickness);
+        }
+
+        if (_minOpacity / 100 >= 10)
+        {
+            _maxOpacity = _minOpacity;
+            _minOpacity = _maxOpacity / 10;
+        }
+        else
+        {
+            _maxOpacity = _minOpacity * 10;
+        }
+    }
+    
+    private void Start()
+    {
         _lastPosition = _mainCamera.transform.position;
         CreateLines(line);
     }
@@ -81,6 +108,24 @@ public class SpriteRendererGraph : MonoBehaviour
             Vector3 max = CameraHelper.GetMaxViewFromCameraTo(_mainCamera, transform);
             Vector3 min = CameraHelper.GetMinViewFromCameraTo(_mainCamera, transform);
             OnCameraZoomIn(max, min);
+        }
+
+        if (_mainCamera.orthographic)
+        {
+            float currentOpacity = _mainCamera.orthographicSize / lineThickness;
+            float opacity = currentOpacity / _minOpacity;
+
+            foreach (SpriteRenderer spriteX in _lineX) {
+                Color color = spriteX.color;
+                color.a = Mathf.Clamp01((_maxOpacity - currentOpacity) / (_maxOpacity - _minOpacity));
+                spriteX.color = color;
+            }
+
+            foreach (SpriteRenderer spriteY in _lineY) {
+                Color color = spriteY.color;
+                color.a = Mathf.Clamp01((_maxOpacity - currentOpacity) / (_maxOpacity - _minOpacity));
+                spriteY.color = color;
+            }
         }
 
         _lastPosition = _mainCamera.transform.position;

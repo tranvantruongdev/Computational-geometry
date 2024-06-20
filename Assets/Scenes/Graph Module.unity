@@ -193,6 +193,8 @@ MonoBehaviour:
   lineThickness: 0.05
   _spritePrefab: {fileID: 7396739620606495009, guid: 9154b33e938b6264f87b4919ac78f74f,
     type: 3}
+  _maxOpacity: 0
+  _minOpacity: 0
   _yColor: {r: 0, g: 1, b: 0, a: 1}
   _xColor: {r: 1, g: 0, b: 0, a: 1}
   _lineColor: {r: 0.3882353, g: 0.3882353, b: 0.3882353, a: 1}
@@ -391,6 +393,8 @@ MonoBehaviour:
   lineThickness: 0.005
   _spritePrefab: {fileID: 7396739620606495009, guid: 9154b33e938b6264f87b4919ac78f74f,
     type: 3}
+  _maxOpacity: 0
+  _minOpacity: 0
   _yColor: {r: 0, g: 1, b: 0, a: 1}
   _xColor: {r: 1, g: 0, b: 0, a: 1}
   _lineColor: {r: 0.3882353, g: 0.3882353, b: 0.3882353, a: 1}
